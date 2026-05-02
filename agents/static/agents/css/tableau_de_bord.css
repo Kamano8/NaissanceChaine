@@ -1,0 +1,256 @@
+/* ============================================================
+   NaissanceChain — Dashboard Agent (VERSION PRO COMPLETE)
+   ============================================================ */
+
+/* ===== BASE ===== */
+.nc-agent-body {
+    background: #f4f6fa;
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+/* ============================================================
+   TOPBAR
+   ============================================================ */
+.nc-agent-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: white;
+    padding: 14px 18px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.nc-agent-logo {
+    color: white;
+    font-size: 17px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.nc-agent-logo i { color: #f5a623; }
+.text-orange { color: #f5a623; }
+
+.nc-agent-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+/* Statut */
+.nc-statut-pill {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+}
+
+.nc-statut-online {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.nc-statut-offline {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+/* Avatar */
+.nc-agent-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: #1a73e8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* ============================================================
+   CONTENU
+   ============================================================ */
+.nc-agent-content {
+    flex: 1;
+    padding: 20px 16px 90px;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+/* ============================================================
+   HEADER
+   ============================================================ */
+.nc-tdb-header {
+    margin-bottom: 18px;
+}
+
+.nc-tdb-nom {
+    font-size: 24px;
+    font-weight: 800;
+    color: white;
+}
+
+.nc-tdb-secteur {
+    background: #0d9e6e;
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+}
+
+/* ============================================================
+   DEVICE BAR
+   ============================================================ */
+.nc-tdb-device-bar {
+    display: flex;
+    justify-content: space-between;
+    background: white;
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+}
+
+/* ============================================================
+   COMPTEURS
+   ============================================================ */
+.nc-tdb-compteurs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.nc-compteur-card {
+    background: white;
+    border-radius: 14px;
+    padding: 16px;
+    border: 1px solid #e8edf3;
+    transition: all 0.25s ease;
+}
+
+.nc-compteur-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+.nc-compteur-nombre {
+    font-size: 36px;
+    font-weight: 800;
+}
+
+.nc-nombre-alerte { color: red; }
+
+/* ============================================================
+   FLUX
+   ============================================================ */
+.nc-flux-item {
+    display: flex;
+    gap: 12px;
+    background: white;
+    border-radius: 12px;
+    padding: 14px;
+    border: 1px solid #e8edf3;
+    transition: 0.2s;
+}
+
+.nc-flux-item:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+/* ============================================================
+   FAB
+   ============================================================ */
+.nc-fab {
+    position: fixed;
+    bottom: 76px;
+    right: 20px;
+    width: 52px;
+    height: 52px;
+    background: #f5a623;
+    border-radius: 50%;
+}
+
+/* ============================================================
+   BOTTOM NAV
+   ============================================================ */
+.nc-agent-bottomnav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 0;
+}
+
+/* ============================================================
+   📱 TABLETTE
+   ============================================================ */
+@media (min-width: 768px) {
+
+    .nc-agent-content {
+        padding: 24px 24px 100px;
+    }
+
+    .nc-tdb-nom {
+        font-size: 28px;
+    }
+
+    .nc-tdb-compteurs {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
+    }
+
+    .nc-compteur-nombre {
+        font-size: 40px;
+    }
+}
+
+/* ============================================================
+   💻 DESKTOP
+   ============================================================ */
+@media (min-width: 1024px) {
+
+    .nc-agent-content {
+        max-width: 1100px;
+        margin: auto;
+    }
+
+    .nc-agent-bottomnav {
+        display: none;
+    }
+
+    .nc-tdb-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .nc-tdb-compteurs {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+/* ============================================================
+   🖥️ LARGE SCREEN
+   ============================================================ */
+@media (min-width: 1400px) {
+
+    .nc-agent-content {
+        max-width: 1300px;
+    }
+
+    .nc-compteur-nombre {
+        font-size: 48px;
+    }
+
+    .nc-tdb-nom {
+        font-size: 32px;
+    }
+}

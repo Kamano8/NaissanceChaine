@@ -1,0 +1,72 @@
+/* Design System NaissanceChain — Republic of Guinea */
+:root {
+    --nc-primary: #1a73e8;
+    --nc-dark: #0d1b3e;
+    --nc-accent: #f5a623;
+    --nc-success: #0d9e6e;
+    --nc-danger: #e53e3e;
+    --nc-bg-light: #f8f9fa;
+    --nc-card-shadow: 0 10px 25px rgba(13, 27, 62, 0.07);
+    --nc-border-radius: 12px;
+    --nc-guinee-red: #ce1126;
+    --nc-guinee-yellow: #fcd116;
+    --nc-guinee-green: #009460;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: var(--nc-bg-light);
+    color: #333;
+}
+
+/* Cartes style Maquette */
+.nc-card {
+    background: #fff;
+    border: none;
+    border-radius: var(--nc-border-radius);
+    box-shadow: var(--nc-card-shadow);
+    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+}
+
+/* Boutons */
+.btn-nc-primary {
+    background-color: var(--nc-primary);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-weight: 600;
+    color: white;
+}
+
+.btn-nc-primary:hover {
+    background-color: #0b5ed7;
+    color: white;
+}
+
+.btn-nc-primary:active {
+    transform: translateY(1px);
+}
+
+/* Flux d'activité (Maquette p.1) */
+.nc-flux-item {
+    border-left: 4px solid var(--nc-primary);
+    background: #fff;
+    padding: 1rem;
+    margin-bottom: 10px;
+    border-radius: 0 8px 8px 0;
+}
+
+.nc-flux-non-lu {
+    background-color: #f0f7ff;
+    font-weight: 500;
+}
+
+/* Mobile First Adjustments */
+@media (max-width: 768px) {
+    .nc-sidebar { display: none; }
+    .container-main { padding: 15px; }
+    .nc-card-stats {
+        margin-bottom: 10px;
+    }
+}

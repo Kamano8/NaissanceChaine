@@ -1,0 +1,260 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de Demande — NaissanceChain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'verification/css/portail_public.css' %}">
+    <link rel="stylesheet" href="{% static 'verification/css/verification.css' %}">
+</head>
+<body class="nc-public-body">
+
+<!-- NAVBAR -->
+<nav class="nc-pub-nav">
+    <a href="{% url 'verification:public' %}" class="nc-pub-logo">
+        <i class="fa-solid fa-diamond"></i>
+        <span>Naissance<strong>Chain</strong></span>
+    </a>
+    <div class="nc-pub-nav-links">
+        <a href="{% url 'verification:public' %}">Vérifier</a>
+        <a href="{% url 'verification:suivi' %}" style="color:#1a73e8;font-weight:600">Suivi Demande</a>
+    </div>
+    <div class="nc-pub-nav-right">
+        <span class="nc-pub-lang"><i class="fa-solid fa-globe"></i> FR</span>
+    </div>
+</nav>
+
+<!-- CONTENU -->
+<div class="nc-suivi-page">
+
+    <!-- En-tête -->
+    <div class="nc-suivi-header">
+        <h1 class="nc-suivi-titre">Suivi de vos demandes</h1>
+        <p class="nc-suivi-sous">
+            Suivez en temps réel l'avancement de l'enregistrement de vos enfants.
+            Vos données sont protégées et authentifiées par la blockchain nationale.
+        </p>
+    </div>
+
+    <!-- Barre de recherche -->
+    <div class="nc-suivi-search-card">
+        <form method="get" class="nc-suivi-form">
+            <div class="nc-suivi-search-wrap">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <input
+                    type="text"
+                    name="ref"
+                    value="{{ reference }}"
+                    placeholder="Entrez votre numéro de référence (ex: GN-2024-...)"
+                    class="nc-suivi-search-input"
+                >
+                <button type="submit" class="nc-suivi-search-btn">Rechercher</button>
+            </div>
+        </form>
+        {% if not reference %}
+        <div class="nc-suivi-recents">
+            <span>Recherches récentes :</span>
+            <a href="?ref=GN-2024-8842-X">GN-2024-8842-X</a>
+            <a href="?ref=GN-2024-9105-B">GN-2024-9105-B</a>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Erreur -->
+    {% if erreur %}
+    <div class="nc-suivi-erreur">
+        <i class="fa-solid fa-circle-exclamation"></i> {{ erreur }}
+    </div>
+    {% endif %}
+
+    <!-- Résultat : acte trouvé -->
+    {% if acte %}
+    <div class="nc-suivi-layout">
+
+        <!-- Colonne gauche : demandes actives -->
+        <div class="nc-suivi-col-g">
+            <div class="nc-suivi-section-titre">
+                Demandes Actives
+                <span class="nc-suivi-count">1</span>
+                <a href="#" class="nc-suivi-voir-tout">Voir tout l'historique</a>
+            </div>
+
+            <!-- Carte acte -->
+            <div class="nc-suivi-acte-card">
+                <div class="nc-suivi-acte-entete">
+                    <div>
+                        <h3 class="nc-suivi-enfant-nom">{{ acte.get_nom_complet_enfant }}</h3>
+                        <span class="nc-suivi-ref"># Ref: {{ acte.reference }}</span>
+                    </div>
+                    <span class="nc-suivi-statut-badge
+                        {% if acte.est_synchronise %}nc-statut-valide{% else %}nc-statut-traitement{% endif %}">
+                        {% if acte.est_synchronise %}Validé & Sécurisé{% else %}Traitement en cours{% endif %}
+                    </span>
+                </div>
+
+                <!-- Barre de progression -->
+                <div class="nc-suivi-progression">
+                    <div class="nc-prog-etape {% if True %}nc-prog-done{% endif %}">
+                        <div class="nc-prog-cercle"><i class="fa-solid fa-check"></i></div>
+                        <span>REÇU</span>
+                    </div>
+                    <div class="nc-prog-ligne {% if not acte.est_synchronise %}nc-prog-ligne-active{% else %}nc-prog-ligne-done{% endif %}"></div>
+                    <div class="nc-prog-etape nc-prog-active">
+                        <div class="nc-prog-cercle nc-prog-cercle-active">
+                            <i class="fa-regular fa-clock"></i>
+                        </div>
+                        <span>EN VALIDATION</span>
+                    </div>
+                    <div class="nc-prog-ligne {% if acte.est_synchronise %}nc-prog-ligne-done{% endif %}"></div>
+                    <div class="nc-prog-etape {% if acte.est_synchronise %}nc-prog-done{% endif %}">
+                        <div class="nc-prog-cercle {% if acte.est_synchronise %}nc-prog-cercle-done{% endif %}">
+                            <i class="fa-solid {% if acte.est_synchronise %}fa-check{% else %}fa-database{% endif %}"></i>
+                        </div>
+                        <span>BLOCKCHAIN</span>
+                    </div>
+                </div>
+
+                <!-- Métadonnées -->
+                <div class="nc-suivi-meta">
+                    <div>
+                        <span class="nc-meta-label">DATE DE DÉPÔT</span>
+                        <span class="nc-meta-val">{{ acte.date_creation|date:"d M Y" }}</span>
+                    </div>
+                    <div>
+                        <span class="nc-meta-label">ESTIMATION (ETA)</span>
+                        {% if acte.est_synchronise %}
+                        <span class="nc-meta-val" style="color:#0d9e6e">Prêt au téléchargement</span>
+                        {% else %}
+                        <span class="nc-meta-val" style="color:#1a73e8">48 Heures</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <a href="{% url 'actes:detail' acte.pk %}" class="nc-suivi-detail-lien">
+                    Voir les détails de l'acte <i class="fa-solid fa-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Colonne droite : options -->
+        <div class="nc-suivi-col-d">
+
+            <!-- Alertes statut -->
+            <div class="nc-suivi-card">
+                <h4 class="nc-suivi-card-titre">
+                    <i class="fa-solid fa-bell" style="color:#1a73e8"></i>
+                    Alertes de Statut
+                </h4>
+                <p class="nc-suivi-card-sous">Soyez informé dès qu'une étape est franchie.</p>
+
+                <label class="nc-option-alerte nc-option-active">
+                    <input type="checkbox" checked>
+                    <div class="nc-option-icone" style="background:#dbeafe;color:#1a73e8">
+                        <i class="fa-solid fa-comment-sms"></i>
+                    </div>
+                    <div>
+                        <strong>Notifications SMS</strong>
+                        <span>Recevez un message texte sur votre téléphone mobile.</span>
+                    </div>
+                </label>
+
+                <label class="nc-option-alerte">
+                    <input type="checkbox">
+                    <div class="nc-option-icone" style="background:#f1f5f9;color:#64748b">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </div>
+                    <div>
+                        <strong>Appel Vocal Local</strong>
+                        <span>Recevez un appel automatique dans votre langue locale (Soussou, Peul, Malinké).</span>
+                    </div>
+                </label>
+
+                <button class="nc-btn-primary" style="width:100%;justify-content:center;margin-top:12px">
+                    Mettre à jour les préférences
+                </button>
+            </div>
+
+            <!-- Besoin d'aide -->
+            <div class="nc-suivi-card nc-suivi-aide">
+                <h4 class="nc-suivi-card-titre">Besoin d'aide ?</h4>
+                <p>Utilisez notre assistance vocale pour comprendre le processus de validation blockchain.</p>
+                <button class="nc-btn-vocal">
+                    <i class="fa-solid fa-microphone"></i> Activer l'audio
+                </button>
+            </div>
+
+            <!-- Sûreté garantie -->
+            <div class="nc-suivi-card nc-suivi-surete">
+                <i class="fa-solid fa-circle-check" style="color:#0d9e6e;font-size:18px"></i>
+                <div>
+                    <strong>SÛRETÉ GARANTIE</strong>
+                    <p>Chaque acte est gravé de manière immuable sur la blockchain de l'État guinéen.</p>
+                </div>
+            </div>
+
+        </div>
+
+    </div><!-- fin layout -->
+    {% endif %}
+
+    <!-- Infos générales (toujours visibles) -->
+    <div class="nc-suivi-infos-bas">
+        <div class="nc-info-bas-item">
+            <i class="fa-regular fa-clock" style="color:#1a73e8;font-size:24px"></i>
+            <h4>Délais de traitement</h4>
+            <p>Le délai moyen de validation est de 48h à 72h selon la région de dépôt.</p>
+        </div>
+        <div class="nc-info-bas-item">
+            <i class="fa-solid fa-circle-check" style="color:#0d9e6e;font-size:24px"></i>
+            <h4>Authenticité</h4>
+            <p>Une fois validé, votre acte possède un code QR unique vérifiable partout dans le monde.</p>
+        </div>
+        <div class="nc-info-bas-item">
+            <i class="fa-solid fa-arrow-right" style="color:#64748b;font-size:24px"></i>
+            <h4>Étape suivante</h4>
+            <p>Dès validation, vous pourrez télécharger le document PDF ou demander une copie physique.</p>
+        </div>
+    </div>
+
+</div><!-- fin page -->
+
+<!-- FOOTER -->
+<footer class="nc-pub-footer">
+    <div class="nc-pub-footer-content">
+        <div class="nc-pub-footer-brand">
+            <div class="nc-pub-logo" style="color:white;margin-bottom:10px">
+                <i class="fa-solid fa-diamond" style="color:#1a73e8"></i>
+                <span>Naissance<strong style="color:#f5a623">Chain</strong></span>
+            </div>
+            <p>Sécuriser l'identité de chaque enfant dès la naissance grâce à la technologie blockchain.</p>
+        </div>
+        <div class="nc-pub-footer-col">
+            <h4>Liens Rapides</h4>
+            <a href="{% url 'verification:public' %}">Vérification Publique</a>
+            <a href="#">Guide Parent</a>
+            <a href="#">Portail Agent</a>
+        </div>
+        <div class="nc-pub-footer-col">
+            <h4>Assistance</h4>
+            <a href="#">Centre d'aide</a>
+            <a href="#">Nous contacter</a>
+            <a href="#">Signaler une erreur</a>
+        </div>
+        <div class="nc-pub-footer-col">
+            <h4>Légal</h4>
+            <a href="#">Confidentialité</a>
+            <a href="#">Conditions d'utilisation</a>
+            <a href="#">RGPD Guinée</a>
+        </div>
+    </div>
+    <div class="nc-pub-footer-copy">
+        © 2026 NaissanceChain. République de Guinée — Ministère de l'Administration du Territoire.
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

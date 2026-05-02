@@ -1,0 +1,411 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<style>
+    .nc-profil-hero {
+        background: linear-gradient(135deg, #002D5B 0%, #1a73e8 100%);
+        border-radius: 16px;
+        padding: 32px;
+        color: white;
+        display: flex;
+        align-items: center;
+        gap: 28px;
+        margin-bottom: 28px;
+        position: relative;
+        overflow: hidden;
+    }
+    .nc-profil-hero::before {
+        content: '';
+        position: absolute;
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.06);
+    }
+    .nc-avatar-wrap {
+        position: relative;
+        flex-shrink: 0;
+    }
+    .nc-avatar {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 4px solid rgba(255,255,255,0.4);
+    }
+    .nc-avatar-initiales {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.2);
+        border: 4px solid rgba(255,255,255,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        font-weight: 800;
+        color: white;
+    }
+    .nc-badge-role {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.15);
+        border: 1px solid rgba(255,255,255,0.3);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 8px;
+    }
+    .nc-statut-dot {
+        width: 8px; height: 8px;
+        border-radius: 50%;
+        background: #0d9e6e;
+        display: inline-block;
+    }
+    .nc-section-card {
+        background: #fff;
+        border-radius: 16px;
+        padding: 24px;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+        margin-bottom: 24px;
+    }
+    .nc-section-titre {
+        font-size: 15px;
+        font-weight: 700;
+        color: #0d1b3e;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 2px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .nc-section-titre i {
+        color: #1a73e8;
+    }
+    .nc-info-row {
+        display: flex;
+        align-items: center;
+        padding: 12px 0;
+        border-bottom: 1px solid #f8fafc;
+        gap: 12px;
+    }
+    .nc-info-row:last-child { border-bottom: none; }
+    .nc-info-icone {
+        width: 36px; height: 36px;
+        border-radius: 10px;
+        background: #eff6ff;
+        color: #1a73e8;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+    .nc-info-label {
+        font-size: 11px;
+        color: #94a3b8;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .nc-info-valeur {
+        font-size: 14px;
+        color: #0d1b3e;
+        font-weight: 500;
+    }
+    .nc-stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .nc-stat-item {
+        background: #fff;
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.05);
+        border: 1px solid #f1f5f9;
+    }
+    .nc-stat-nb {
+        font-size: 28px;
+        font-weight: 800;
+        color: #1a73e8;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .nc-stat-label {
+        font-size: 12px;
+        color: #64748b;
+        font-weight: 500;
+    }
+    .nc-form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 6px;
+    }
+    .nc-btn-save {
+        background: #1a73e8;
+        color: white;
+        border: none;
+        padding: 11px 28px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .nc-btn-save:hover { background: #1557b0; }
+    .nc-btn-cancel {
+        background: #f8fafc;
+        color: #374151;
+        border: 1.5px solid #e2e8f0;
+        padding: 11px 24px;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .nc-btn-cancel:hover { border-color: #1a73e8; color: #1a73e8; }
+    .nc-photo-preview {
+        width: 70px; height: 70px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #e2e8f0;
+        margin-bottom: 10px;
+    }
+    .nc-photo-initiales-sm {
+        width: 70px; height: 70px;
+        border-radius: 50%;
+        background: #eff6ff;
+        border: 3px solid #e2e8f0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        font-weight: 800;
+        color: #1a73e8;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-0">
+
+    <!-- ── HERO PROFIL ── -->
+    <div class="nc-profil-hero">
+        <div class="nc-avatar-wrap">
+            {% if utilisateur.photo %}
+                <img src="{{ utilisateur.photo.url }}" class="nc-avatar" alt="Photo de profil">
+            {% else %}
+                <div class="nc-avatar-initiales">
+                    {{ utilisateur.prenom|slice:":1" }}{{ utilisateur.nom|slice:":1" }}
+                </div>
+            {% endif %}
+        </div>
+        <div>
+            <h2 class="fw-bold mb-1" style="font-size:24px;">{{ utilisateur.get_nom_complet }}</h2>
+            <p class="mb-1" style="opacity:.8; font-size:14px;">{{ utilisateur.email }}</p>
+            <div class="nc-badge-role">
+                <span class="nc-statut-dot"></span>
+                {{ utilisateur.get_role_display }}
+            </div>
+            {% if utilisateur.identifiant_agent %}
+            <div class="nc-badge-role mt-2">
+                <i class="fa-solid fa-id-badge"></i>
+                {{ utilisateur.identifiant_agent }}
+            </div>
+            {% endif %}
+        </div>
+        <div class="ms-auto text-end d-none d-md-block" style="opacity:.7; font-size:12px;">
+            <p class="mb-1"><i class="fa-solid fa-calendar me-1"></i> Membre depuis {{ utilisateur.date_joined|date:"d/m/Y" }}</p>
+            {% if utilisateur.derniere_connexion_ip %}
+            <p class="mb-0"><i class="fa-solid fa-location-dot me-1"></i> IP : {{ utilisateur.derniere_connexion_ip }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ── STATISTIQUES RAPIDES ── -->
+    <div class="nc-stat-grid">
+        <div class="nc-stat-item">
+            <div class="nc-stat-nb">{{ utilisateur.date_joined|timesince|truncatewords:1 }}</div>
+            <div class="nc-stat-label">Ancienneté</div>
+        </div>
+        <div class="nc-stat-item">
+            <div class="nc-stat-nb" style="color:#0d9e6e;">
+                {% if utilisateur.is_active %}<i class="fa-solid fa-circle-check" style="font-size:24px;"></i>{% else %}<i class="fa-solid fa-circle-xmark" style="font-size:24px;color:#e53e3e;"></i>{% endif %}
+            </div>
+            <div class="nc-stat-label">Statut Compte</div>
+        </div>
+        <div class="nc-stat-item">
+            <div class="nc-stat-nb" style="color:#f5a623;">
+                {{ utilisateur.get_region_display|default:"—" }}
+            </div>
+            <div class="nc-stat-label">Région</div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+
+        <!-- ── COLONNE GAUCHE : Infos + Sécurité ── -->
+        <div class="col-lg-5">
+
+            <!-- Informations -->
+            <div class="nc-section-card">
+                <div class="nc-section-titre">
+                    <i class="fa-solid fa-circle-info"></i> Informations du compte
+                </div>
+                <div class="nc-info-row">
+                    <div class="nc-info-icone"><i class="fa-solid fa-envelope"></i></div>
+                    <div>
+                        <div class="nc-info-label">Email</div>
+                        <div class="nc-info-valeur">{{ utilisateur.email }}</div>
+                    </div>
+                </div>
+                <div class="nc-info-row">
+                    <div class="nc-info-icone"><i class="fa-solid fa-phone"></i></div>
+                    <div>
+                        <div class="nc-info-label">Téléphone</div>
+                        <div class="nc-info-valeur">{{ utilisateur.telephone|default:"Non renseigné" }}</div>
+                    </div>
+                </div>
+                <div class="nc-info-row">
+                    <div class="nc-info-icone"><i class="fa-solid fa-map-marker-alt"></i></div>
+                    <div>
+                        <div class="nc-info-label">Préfecture</div>
+                        <div class="nc-info-valeur">{{ utilisateur.prefecture|default:"Non renseignée" }}</div>
+                    </div>
+                </div>
+                <div class="nc-info-row">
+                    <div class="nc-info-icone"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div>
+                        <div class="nc-info-label">Rôle système</div>
+                        <div class="nc-info-valeur">{{ utilisateur.get_role_display }}</div>
+                    </div>
+                </div>
+                {% if utilisateur.derniere_connexion_ip %}
+                <div class="nc-info-row">
+                    <div class="nc-info-icone"><i class="fa-solid fa-wifi"></i></div>
+                    <div>
+                        <div class="nc-info-label">Dernière IP</div>
+                        <div class="nc-info-valeur">{{ utilisateur.derniere_connexion_ip }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Sécurité -->
+            <div class="nc-section-card">
+                <div class="nc-section-titre">
+                    <i class="fa-solid fa-lock"></i> Sécurité
+                </div>
+                <div class="d-flex align-items-center justify-content-between py-2">
+                    <div>
+                        <div class="fw-semibold" style="font-size:14px; color:#0d1b3e;">Mot de passe</div>
+                        <div style="font-size:12px; color:#94a3b8;">Dernière modification inconnue</div>
+                    </div>
+                    <a href="{% url 'accounts:password_reset' %}" class="btn btn-sm btn-outline-primary" style="font-size:12px; border-radius:8px;">
+                        <i class="fa-solid fa-key me-1"></i> Modifier
+                    </a>
+                </div>
+                <div class="d-flex align-items-center justify-content-between py-2">
+                    <div>
+                        <div class="fw-semibold" style="font-size:14px; color:#0d1b3e;">Statut du compte</div>
+                        <div style="font-size:12px; color:#94a3b8;">
+                            {% if utilisateur.is_active %}
+                                <span class="text-success"><i class="fa-solid fa-circle-check me-1"></i>Actif</span>
+                            {% else %}
+                                <span class="text-danger"><i class="fa-solid fa-circle-xmark me-1"></i>Désactivé</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ── COLONNE DROITE : Formulaire modification ── -->
+        <div class="col-lg-7">
+            <div class="nc-section-card">
+                <div class="nc-section-titre">
+                    <i class="fa-solid fa-pen-to-square"></i> Modifier mon profil
+                </div>
+
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+
+                    <!-- Photo actuelle + champ upload -->
+                    <div class="mb-4 d-flex align-items-center gap-3">
+                        {% if utilisateur.photo %}
+                            <img src="{{ utilisateur.photo.url }}" class="nc-photo-preview" id="photoPreview">
+                        {% else %}
+                            <div class="nc-photo-initiales-sm" id="photoInitiales">
+                                {{ utilisateur.prenom|slice:":1" }}{{ utilisateur.nom|slice:":1" }}
+                            </div>
+                        {% endif %}
+                        <div>
+                            <label class="nc-form-label d-block">Photo de profil</label>
+                            {{ formulaire.photo }}
+                            <small class="text-muted d-block mt-1">JPG, PNG — max 2 Mo</small>
+                        </div>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="nc-form-label">Prénom</label>
+                            {{ formulaire.prenom }}
+                            {% if formulaire.prenom.errors %}
+                                <div class="text-danger small mt-1">{{ formulaire.prenom.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="nc-form-label">Nom</label>
+                            {{ formulaire.nom }}
+                            {% if formulaire.nom.errors %}
+                                <div class="text-danger small mt-1">{{ formulaire.nom.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="nc-form-label">Téléphone</label>
+                            {{ formulaire.telephone }}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="nc-form-label">Région</label>
+                            {{ formulaire.region }}
+                        </div>
+                        <div class="col-12">
+                            <label class="nc-form-label">Préfecture</label>
+                            {{ formulaire.prefecture }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mt-4 pt-3 border-top">
+                        <button type="submit" class="nc-btn-save">
+                            <i class="fa-solid fa-floppy-disk"></i> Enregistrer
+                        </button>
+                        <a href="{% url 'dashboard:index' %}" class="nc-btn-cancel">
+                            <i class="fa-solid fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

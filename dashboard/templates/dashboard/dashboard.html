@@ -1,0 +1,367 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titre %}Tableau de Bord National{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'dashboard/css/dashboard.css' %}">
+<style>
+    body {
+        background-color: #000596 !important;
+        background-image: none !important;
+        color: #ffffff !important;
+    }
+
+    /* Application de la couleur demandée sur Sidebar et Navbar */
+    .nc-sidebar, .nc-navbar, .nc-topbar, aside, nav {
+        background: rgb(24, 24, 88) !important;
+        border-color: rgba(255, 255, 255, 0.1) !important;
+    }
+</style>
+{% endblock %}
+
+{% block contenu %}
+
+<!-- EN-TÊTE -->
+
+<div class="nc-db-entete">
+    <div>
+        <h1 class="nc-db-titre">Tableau de Bord National</h1>
+        <p class="nc-db-sous">Surveillance en temps réel de l'état civil en Guinée.</p>
+    </div>
+    <div class="nc-db-actions">
+        <button class="nc-btn-outline">
+            <i class="fa-regular fa-clock"></i> Dernières 24 Heures
+        </button>
+        <a href="{% url 'verification:index' %}" class="nc-btn-primary">
+            <i class="fa-solid fa-shield-check"></i> Vérifier un Acte
+        </a>
+    </div>
+</div>
+
+<!-- STATS ENFANTS -->
+<div style="display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:24px;">
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(255,255,255,0.18);color: blue;">
+                <i class="fa-solid fa-baby"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_total }}</div>
+        <div class="nc-kpi-label">Total Enregistrés</div>
+        <div class="nc-kpi-objectif">Tous les actes</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(110,231,183,0.2);color:#6ee7b7;">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_synchronise }}</div>
+        <div class="nc-kpi-label">Terminés</div>
+        <div class="nc-kpi-objectif">Synchronisés blockchain</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(251,191,36,0.2);color:#fbbf24;">
+                <i class="fa-solid fa-spinner"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_en_attente }}</div>
+        <div class="nc-kpi-label">En Cours</div>
+        <div class="nc-kpi-objectif">En attente de sync</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(252,165,165,0.2);color:#fca5a5;">
+                <i class="fa-solid fa-circle-exclamation"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_erreur }}</div>
+        <div class="nc-kpi-label">Erreurs</div>
+        <div class="nc-kpi-objectif">Problème de sync</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(255,255,255,0.18);color:#03a9f4;">
+                <i class="fa-solid fa-calendar-day"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_aujourd_hui }}</div>
+        <div class="nc-kpi-label">Aujourd'hui</div>
+        <div class="nc-kpi-objectif">Enregistrés ce jour</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+           <div class="nc-kpi-icone" style="background:rgba(255,255,255,0.18);color:#03a9f4;">
+                <i class="fa-solid fa-calendar-month"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_ce_mois }}</div>
+        <div class="nc-kpi-label">Ce Mois</div>
+        <div class="nc-kpi-objectif">Enregistrés ce mois</div>
+    </div>
+
+</div>
+
+<!-- ================================================================
+     EN-TÊTE DE PAGE
+     ================================================================ -->
+<div class="nc-db-entete">
+    <div>
+        <h1 class="nc-db-titre">Tableau de Bord National</h1>
+        <p class="nc-db-sous">Surveillance en temps réel de l'état civil en Guinée.</p>
+    </div>
+    <div class="nc-db-actions">
+        <button class="nc-btn-outline">
+            <i class="fa-regular fa-clock"></i> Dernières 24 Heures
+        </button>
+        <a href="{% url 'verification:index' %}" class="nc-btn-primary">
+            <i class="fa-solid fa-shield-check"></i> Vérifier un Acte
+        </a>
+    </div>
+</div>
+
+<!-- ================================================================
+     ALERTE CRITIQUE (bandeau rouge — maquette p.5)
+     ================================================================ -->
+{% if alerte_critique %}
+<div class="nc-alerte-critique-banner">
+    <div class="nc-alerte-icone-wrap">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+    </div>
+    <div class="nc-alerte-corps">
+        <p class="nc-alerte-titre">
+            Alerte Critique : <span>Baisse de vigilance détectée</span>
+        </p>
+        <p class="nc-alerte-texte">
+            Le taux d'enregistrement à <strong>Kankan</strong> et <strong>Faranah</strong>
+            a chuté de 15% au cours des dernières 48 heures.
+            Une vérification du matériel des agents de terrain est recommandée.
+        </p>
+    </div>
+    <a href="{% url 'agents:liste' %}" class="nc-alerte-btn">
+        Voir les agents
+    </a>
+</div>
+{% endif %}
+
+<!-- ================================================================
+     LAYOUT PRINCIPAL : Colonne gauche large + Colonne droite
+     ================================================================ -->
+<div class="nc-db-layout">
+
+    <!-- ============================================================
+         COLONNE GAUCHE
+         ============================================================ -->
+    <div class="nc-db-col-gauche">
+
+        <!-- ── DENSITÉ NATIONALE (heatmap régions) ── -->
+        <div class="nc-card nc-db-section">
+            <div class="nc-section-header">
+                <div>
+                    <h2 class="nc-section-titre">Densité Nationale des Enregistrements</h2>
+                    <p class="nc-section-sous">Vue thermique par région administrative</p>
+                </div>
+                <div class="nc-legende-heatmap">
+                    <span class="nc-leg nc-leg-faible">
+                        <i class="fa-solid fa-circle prima"></i> Faible
+                    </span>
+                    <span class="nc-leg nc-leg-moyen">
+                        <i class="fa-solid fa-circle"></i> Moyen
+                    </span>
+                    <span class="nc-leg nc-leg-eleve">
+                        <i class="fa-solid fa-circle"></i> Élevé
+                    </span>
+                </div>
+            </div>
+
+            <!-- Grille 4×2 régions -->
+            <div class="nc-heatmap-grid">
+                {% for region in regions %}
+                <div class="nc-heatmap-cell nc-heat-{{ region.niveau }}"
+                     title="{{ region.nom }} : {{ region.actes }} actes">
+                    <span class="nc-heat-nom">{{ region.nom }}</span>
+                    <span class="nc-heat-val">{{ region.actes|floatformat:0 }}</span>
+                    {% if region.focus %}
+                    <div class="nc-heat-focus-tag">
+                        <i class="fa-solid fa-bolt"></i>
+                        Focus Actuel
+                    </div>
+                    <div class="nc-heat-focus-label">
+                        <i class="fa-solid fa-bolt"></i>
+                        Conakry est en surchauffe (+24%)
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div><!-- fin densité nationale -->
+
+        <!-- ── ÉVÉNEMENTS BLOCKCHAIN ── -->
+        <div class="nc-card nc-db-section">
+            <h2 class="nc-section-titre" style="margin-bottom:16px">
+                Événements Récents sur Blockchain
+            </h2>
+            <div class="nc-events-liste">
+                {% for evt in evenements_blockchain %}
+                <div class="nc-event-row">
+                    <span class="nc-event-temps">{{ evt.temps }}</span>
+                    <span class="nc-event-desc">{{ evt.description }}</span>
+                    <a href="{% url 'audit:index' %}" class="nc-event-lien">Détails</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div><!-- fin événements blockchain -->
+
+    </div><!-- ── fin colonne gauche ── -->
+
+    <!-- ============================================================
+         COLONNE DROITE
+         ============================================================ -->
+    <div class="nc-db-col-droite">
+
+        <!-- ── KPI 1 : TAUX DE COUVERTURE ── -->
+        <div class="nc-card nc-kpi-card">
+            <div class="nc-kpi-header">
+                <div class="nc-kpi-icone nc-kpi-bleu">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <span class="nc-kpi-variation nc-hausse">↑ +2.4%</span>
+            </div>
+            <div class="nc-kpi-valeur">{{ taux_couverture }}%</div>
+            <div class="nc-kpi-label">Taux de Couverture</div>
+            <div class="nc-kpi-objectif">Objectif : 90%</div>
+            <div class="nc-kpi-barre-bg">
+                <div class="nc-kpi-barre nc-barre-bleu"
+                     style="width:{{ taux_couverture }}%"></div>
+            </div>
+        </div>
+
+        <!-- ── KPI 2 : NON SYNCHRONISÉS ── -->
+        <div class="nc-card nc-kpi-card">
+            <div class="nc-kpi-header">
+                <div class="nc-kpi-icone nc-kpi-orange">
+                    <i class="fa-solid fa-database"></i>
+                </div>
+                <span class="nc-kpi-variation nc-baisse">↘ -12%</span>
+            </div>
+            <div class="nc-kpi-valeur">{{ nb_non_synchronises }}</div>
+            <div class="nc-kpi-label">Non Synchronisés</div>
+            <div class="nc-kpi-objectif">En attente de réseau</div>
+        </div>
+
+        <!-- ── TENDANCE DES NAISSANCES (mini graphique) ── -->
+        <div class="nc-card nc-kpi-card">
+            <h3 class="nc-kpi-label" style="margin-bottom:4px">Tendance des Naissances</h3>
+            <p style="font-size:11px;color:#94a3b8;margin-bottom:10px">
+                Records vs Synchronisation (6 mois)
+            </p>
+            <svg viewBox="0 0 260 80" style="width:100%;height:80px;overflow:visible">
+                <!-- Aire records -->
+                <defs>
+                    <linearGradient id="gradBleu" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#1a73e8" stop-opacity="0.15"/>
+                        <stop offset="100%" stop-color="#1a73e8" stop-opacity="0"/>
+                    </linearGradient>
+                    <linearGradient id="gradVert" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#0d9e6e" stop-opacity="0.10"/>
+                        <stop offset="100%" stop-color="#0d9e6e" stop-opacity="0"/>
+                    </linearGradient>
+                </defs>
+                <!-- Aires -->
+                <polygon
+                    points="0,60 44,52 88,48 132,40 176,35 220,28 260,24 260,80 0,80"
+                    fill="url(#gradBleu)"/>
+                <polygon
+                    points="0,64 44,55 88,52 132,44 176,38 220,32 260,28 260,80 0,80"
+                    fill="url(#gradVert)"/>
+                <!-- Lignes -->
+                <polyline
+                    points="0,60 44,52 88,48 132,40 176,35 220,28 260,24"
+                    fill="none" stroke="#1a73e8" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+                <polyline
+                    points="0,64 44,55 88,52 132,44 176,38 220,32 260,28"
+                    fill="none" stroke="#0d9e6e" stroke-width="2"
+                    stroke-dasharray="5,3" stroke-linecap="round"/>
+                <!-- Points -->
+                <circle cx="220" cy="28" r="3" fill="#1a73e8"/>
+                <circle cx="260" cy="24" r="3" fill="#1a73e8"/>
+                <circle cx="260" cy="28" r="3" fill="#0d9e6e"/>
+            </svg>
+            <div class="nc-chart-labels">
+                <span>Jan</span><span>Fév</span><span>Mar</span>
+                <span>Avr</span><span>Mai</span><span>Juin</span>
+            </div>
+        </div>
+
+        <!-- ── TOP 3 AGENTS ── -->
+        <div class="nc-card nc-kpi-card">
+            <h3 class="nc-kpi-label" style="margin-bottom:14px">
+                Performance Agents (Top 3)
+            </h3>
+            {% for ag in top_agents %}
+            <div class="nc-top-agent-row">
+                <div class="nc-top-avatar">
+                    {% if ag.utilisateur.photo %}
+                        <img src="{{ ag.utilisateur.photo.url }}" alt="{{ ag.nom }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    {% elif ag.photo %}
+                        <img src="{{ ag.photo.url }}" alt="{{ ag.nom }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">
+                    {% else %}
+                        {{ ag.nom|slice:":1" }}
+                    {% endif %}
+                    <span class="nc-top-dot {% if ag.en_ligne %}nc-dot-on{% else %}nc-dot-off{% endif %}"></span>
+                </div>
+                <div class="nc-top-info">
+                    <span class="nc-top-nom">{{ ag.nom }}</span>
+                    <span class="nc-top-zone">{{ ag.zone }}</span>
+                </div>
+                <div class="nc-top-perf">
+                    <span class="nc-top-nb">{{ ag.actes }}</span>
+                    <span class="nc-top-unit">ACTES/MOIS</span>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color:rgba(255,255,255,0.50);font-size:13px;text-align:center;padding:12px 0">
+                <i class="fa-solid fa-users-slash"></i> Aucun agent actif ce mois
+            </p>
+            {% endfor %}
+            <a href="{% url 'agents:liste' %}" class="nc-voir-personnel">
+                Voir tout le personnel
+                <i class="fa-solid fa-chevron-right"></i>
+            </a>
+        </div>
+
+        <!-- ── ZONES À RISQUE ── -->
+        <div class="nc-card nc-kpi-card">
+            <h3 class="nc-kpi-label" style="margin-bottom:14px">
+                Zones à Risque (Déficit)
+            </h3>
+            {% for zone in zones_risque %}
+            <div class="nc-risque-row">
+                <span class="nc-risque-nom">{{ zone.nom }}</span>
+                <div class="nc-risque-barre-bg">
+                    <div class="nc-risque-barre nc-risque-{{ zone.couleur }}"
+                         style="width:{{ zone.taux }}%"></div>
+                </div>
+                <span class="nc-risque-pct">{{ zone.taux }}% de l'objectif</span>
+            </div>
+            {% endfor %}
+        </div>
+
+    </div><!-- ── fin colonne droite ── -->
+
+</div><!-- ── fin layout ── -->
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+{% endblock %}

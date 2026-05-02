@@ -1,0 +1,795 @@
+/* ============================================================
+   NaissanceChain — CSS Page de Connexion FINALE
+   Design premium : fond animé + badge NEXACORE
+   ============================================================ */
+
+/* ----- Reset body ----- */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+
+.nc-connexion-body {
+    min-height: 100vh;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: #f0f4ff;
+    overflow: hidden;
+}
+
+
+.nc-connexion-body {
+    height: auto !important;
+    min-height: 100vh;
+    overflow-y: auto !important;
+}
+
+.nc-connexion-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ============================================================
+   PANNEAU GAUCHE
+   ============================================================ */
+.nc-connexion-gauche {
+    flex: 1;
+    position: relative;
+    background:
+        url('https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=1470&auto=format&fit=crop') no-repeat center center;
+    background-size: cover;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 60px;
+    overflow: hidden;
+}
+
+.nc-connexion-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg,
+            rgba(13, 27, 62, 0.96) 0%,
+            rgba(26, 115, 232, 0.82) 100%);
+}
+
+/* --- Particules flottantes --- */
+.nc-particule {
+    position: absolute;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.06);
+    animation: flotter 8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.nc-p1 {
+    width: 300px;
+    height: 300px;
+    top: -80px;
+    left: -80px;
+    animation-delay: 0s;
+}
+
+.nc-p2 {
+    width: 180px;
+    height: 180px;
+    bottom: 60px;
+    right: -40px;
+    animation-delay: 1.5s;
+}
+
+.nc-p3 {
+    width: 120px;
+    height: 120px;
+    top: 40%;
+    right: 60px;
+    animation-delay: 3s;
+}
+
+.nc-p4 {
+    width: 60px;
+    height: 60px;
+    top: 20%;
+    left: 30%;
+    animation-delay: 4.5s;
+}
+
+.nc-p5 {
+    width: 90px;
+    height: 90px;
+    bottom: 20%;
+    left: 10%;
+    animation-delay: 2s;
+}
+
+@keyframes flotter {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    33% {
+        transform: translateY(-18px) rotate(5deg);
+    }
+
+    66% {
+        transform: translateY(10px) rotate(-3deg);
+    }
+}
+
+/* --- Blocs blockchain animés --- */
+.nc-grille-blockchain {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.nc-bloc-anim {
+    position: absolute;
+    left: var(--x);
+    top: var(--y);
+    width: 40px;
+    height: 40px;
+    border: 1.5px solid rgba(26, 115, 232, 0.4);
+    border-radius: 8px;
+    animation: pulserBloc 4s ease-in-out infinite;
+    animation-delay: var(--delay);
+}
+
+.nc-bloc-anim::after {
+    content: '';
+    position: absolute;
+    inset: 6px;
+    background: rgba(26, 115, 232, 0.15);
+    border-radius: 4px;
+}
+
+@keyframes pulserBloc {
+
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+}
+
+/* --- Contenu branding --- */
+.nc-connexion-branding {
+    position: relative;
+    z-index: 2;
+    max-width: 520px;
+}
+
+/* Logo */
+.nc-logo-grand {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 30px;
+    font-weight: 300;
+    color: white;
+    margin-bottom: 40px;
+}
+
+.nc-logo-icone-wrap {
+    width: 52px;
+    height: 52px;
+    background: rgba(245, 166, 35, 0.2);
+    border: 1.5px solid rgba(245, 166, 35, 0.5);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: brillerLogo 3s ease-in-out infinite;
+}
+
+.nc-logo-icone-wrap i {
+    color: #f5a623;
+    font-size: 24px;
+}
+
+@keyframes brillerLogo {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 rgba(245, 166, 35, 0);
+    }
+
+    50% {
+        box-shadow: 0 0 20px rgba(245, 166, 35, 0.35);
+    }
+}
+
+.nc-logo-grand .fw-bold {
+    font-weight: 800;
+    color: #f5a623;
+}
+
+/* Slogan */
+.nc-connexion-slogan {
+    font-size: 40px;
+    font-weight: 800;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 20px;
+    letter-spacing: -0.5px;
+}
+
+.nc-slogan-accent {
+    background: linear-gradient(90deg, #f5a623, #ffd780);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.nc-connexion-desc {
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.78);
+    line-height: 1.7;
+    margin-bottom: 40px;
+}
+
+/* Stats */
+.nc-connexion-stats {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    background: rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 28px;
+}
+
+.nc-stat-item {
+    flex: 1;
+    padding: 16px 24px;
+    text-align: center;
+}
+
+.nc-stat-nombre {
+    display: block;
+    font-size: 22px;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 3px;
+}
+
+.nc-stat-label {
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.6);
+    display: block;
+}
+
+.nc-stat-divider {
+    width: 1px;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.15);
+    flex-shrink: 0;
+}
+
+/* Badge équipe NEXACORE */
+.nc-badge-equipe {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(255, 255, 255, 0.85);
+    padding: 9px 18px;
+    border-radius: 30px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.nc-badge-equipe i {
+    color: #f5a623;
+    font-size: 14px;
+}
+
+.nc-nexacore {
+    font-weight: 800;
+    font-size: 14px;
+    color: #f5a623;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* ============================================================
+   PANNEAU DROIT
+   ============================================================ */
+.nc-connexion-droite {
+    width: 580px;
+    flex-shrink: 0;
+    background: #f0f4ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+/* Fond animé panneau droit */
+.nc-droite-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.nc-cercle {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(60px);
+    animation: bougerCercle 10s ease-in-out infinite;
+}
+
+.nc-c1 {
+    width: 350px;
+    height: 350px;
+    background: rgba(26, 115, 232, 0.12);
+    top: -100px;
+    right: -80px;
+    animation-delay: 0s;
+}
+
+.nc-c2 {
+    width: 250px;
+    height: 250px;
+    background: rgba(245, 166, 35, 0.10);
+    bottom: -60px;
+    left: -60px;
+    animation-delay: 3s;
+}
+
+.nc-c3 {
+    width: 180px;
+    height: 180px;
+    background: rgba(13, 158, 110, 0.09);
+    top: 50%;
+    left: 50%;
+    animation-delay: 6s;
+}
+
+@keyframes bougerCercle {
+
+    0%,
+    100% {
+        transform: translate(0, 0);
+    }
+
+    33% {
+        transform: translate(20px, -20px);
+    }
+
+    66% {
+        transform: translate(-15px, 15px);
+    }
+}
+
+/* ===== CARTE FORMULAIRE ===== */
+.nc-connexion-card {
+    width: 100%;
+    max-width: 400px;
+    background: white;
+    border-radius: 20px;
+    padding: 40px 36px;
+    box-shadow:
+        0 4px 6px rgba(0, 0, 0, 0.04),
+        0 20px 60px rgba(26, 115, 232, 0.12),
+        0 0 0 1px rgba(26, 115, 232, 0.08);
+    position: relative;
+    z-index: 1;
+    animation: entrerCarte 0.5s ease forwards;
+}
+
+@keyframes entrerCarte {
+    from {
+        opacity: 0;
+        transform: translateY(24px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Logo mobile */
+.nc-logo-mobile {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    font-size: 20px;
+    font-weight: 300;
+    color: #0d1b3e;
+    margin-bottom: 24px;
+}
+
+.nc-logo-mobile i {
+    color: #1a73e8;
+    font-size: 18px;
+}
+
+.nc-logo-mobile strong {
+    font-weight: 800;
+    color: #f5a623;
+}
+
+/* Badge sécurité */
+.nc-badge-secure {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: #f0fff4;
+    color: #0d9e6e;
+    border: 1px solid #9ae6b4;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    margin-bottom: 22px;
+}
+
+.nc-badge-secure i {
+    font-size: 12px;
+}
+
+/* Titres */
+.nc-connexion-titre {
+    font-size: 28px;
+    font-weight: 800;
+    color: #0d1b3e;
+    margin-bottom: 6px;
+    letter-spacing: -0.3px;
+}
+
+.nc-connexion-sous-titre {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 28px;
+}
+
+/* Alerte erreur */
+.nc-alert-connexion {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #fff5f5;
+    border: 1px solid #fed7d7;
+    color: #c53030;
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 13.5px;
+    margin-bottom: 20px;
+}
+
+/* ===== CHAMPS ===== */
+.nc-field-group {
+    margin-bottom: 20px;
+}
+
+.nc-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.nc-label i {
+    color: #1a73e8;
+    font-size: 13px;
+}
+
+.nc-label-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.nc-lien-oublie {
+    font-size: 12.5px;
+    color: #1a73e8;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.nc-lien-oublie:hover {
+    color: #1557b0;
+    text-decoration: underline;
+}
+
+/* Wrapper input avec icône */
+.nc-input-wrap {
+    position: relative;
+}
+
+.nc-input-icone {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* Override Bootstrap input dans nc-input-wrap */
+.nc-input-wrap .form-control,
+.nc-input-wrap input {
+    padding-left: 40px !important;
+    height: 48px;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    color: #1e293b !important;
+    transition: all 0.2s !important;
+    background: #fafbff !important;
+    width: 100% !important;
+    display: block !important;
+}
+
+.nc-input-wrap .form-control:focus,
+.nc-input-wrap input:focus {
+    border-color: #1a73e8 !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12) !important;
+    background: white !important;
+    outline: none !important;
+}
+
+/* Wrapper password */
+.nc-password-wrapper {
+    position: relative;
+    display: block;
+    width: 100%;
+}
+
+.nc-password-wrapper .nc-input-icone {
+    left: 14px;
+}
+
+.nc-password-wrapper input,
+.nc-password-wrapper .form-control {
+    width: 100% !important;
+    display: block !important;
+    padding-left: 40px !important;
+    padding-right: 50px !important;
+    height: 48px !important;
+    border: 1.5px solid #e2e8f0 !important;
+    border-radius: 12px !important;
+    font-size: 14px !important;
+    color: #1e293b !important;
+    background: #fafbff !important;
+    transition: all 0.2s !important;
+}
+
+.nc-password-wrapper input:focus,
+.nc-password-wrapper .form-control:focus {
+    border-color: #1a73e8 !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.12) !important;
+    background: white !important;
+    outline: none !important;
+}
+
+.nc-toggle-password {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    outline: none;
+    transition: color 0.2s;
+}
+
+.nc-toggle-password:hover {
+    color: #1a73e8;
+}
+
+/* Erreur champ */
+.nc-field-error {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #e53e3e;
+    margin-top: 5px;
+}
+
+/* ===== BOUTON CONNEXION ===== */
+.nc-btn-connexion {
+    width: 100%;
+    background: linear-gradient(135deg, #1a73e8 0%, #1557b0 100%);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 8px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: 0.2px;
+}
+
+.nc-btn-connexion::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.nc-btn-connexion:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(26, 115, 232, 0.4);
+}
+
+.nc-btn-connexion:hover::before {
+    opacity: 1;
+}
+
+.nc-btn-connexion:active {
+    transform: translateY(0);
+}
+
+.nc-btn-connexion:disabled {
+    opacity: 0.75;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== SÉPARATEUR ===== */
+.nc-separateur {
+    text-align: center;
+    margin: 22px 0;
+    position: relative;
+}
+
+.nc-separateur::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #e2e8f0;
+    z-index: 1;
+}
+
+.nc-separateur span {
+    background: white;
+    padding: 0 16px;
+    position: relative;
+    z-index: 2;
+    color: #94a3b8;
+    font-size: 13px;
+}
+
+/* ===== BOUTON CITOYEN ===== */
+.nc-btn-citoyen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    width: 100%;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 12px;
+    color: #374151;
+    font-weight: 600;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+    background: white;
+}
+
+.nc-btn-citoyen i {
+    color: #1a73e8;
+}
+
+.nc-btn-citoyen:hover {
+    border-color: #1a73e8;
+    color: #1a73e8;
+    background: #f0f7ff;
+    transform: translateY(-1px);
+}
+
+/* ===== FOOTER CARTE ===== */
+.nc-card-footer {
+    margin-top: 28px;
+    padding-top: 18px;
+    border-top: 1px solid #f1f5f9;
+    text-align: center;
+}
+
+.nc-connexion-footer {
+    font-size: 11.5px;
+    color: #94a3b8;
+    margin: 0 0 4px;
+}
+
+.nc-footer-equipe {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.nc-nexacore-sm {
+    color: #1a73e8;
+    font-weight: 800;
+    letter-spacing: 1px;
+    font-size: 12.5px;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 992px) {
+    .nc-connexion-gauche {
+        display: none;
+    }
+
+    .nc-connexion-droite {
+        width: 100%;
+        background: linear-gradient(160deg, #0d1b3e 0%, #1a73e8 100%);
+    }
+
+    .nc-connexion-card {
+        background: white;
+    }
+
+    .nc-logo-mobile {
+        display: flex;
+    }
+
+    .nc-droite-bg {
+        display: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .nc-connexion-droite {
+        padding: 24px 16px;
+    }
+
+    .nc-connexion-card {
+        padding: 28px 22px;
+        border-radius: 16px;
+    }
+
+    .nc-connexion-titre {
+        font-size: 24px;
+    }
+}

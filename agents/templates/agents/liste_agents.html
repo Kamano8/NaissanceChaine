@@ -1,0 +1,457 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titre %}Gestion des Agents{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'agents/css/liste_agents.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- ===== EN-TÊTE PAGE ===== -->
+<div class="nc-page-header">
+    <div>
+        <h1 class="nc-page-titre">Gestion des Agents</h1>
+        <p class="nc-page-sous-titre">
+            Surveillez et gérez les performances de vos agents de terrain à travers la Guinée.
+        </p>
+    </div>
+    <div class="nc-page-actions">
+        <button class="nc-btn-outline" id="btnActualiser">
+            <i class="fa-solid fa-rotate"></i> Actualiser
+        </button>
+        <button class="nc-btn-primary" id="btnNouvelAgent">
+            <i class="fa-solid fa-user-plus"></i> Nouvel Agent
+        </button>
+    </div>
+</div>
+
+<!-- ===== LAYOUT PRINCIPAL : Tableau + Panneau latéral ===== -->
+<div class="nc-agents-layout">
+
+    <!-- ===== COLONNE GAUCHE : Tableau des agents ===== -->
+    <div class="nc-agents-tableau-wrapper">
+
+        <!-- Barre de recherche + filtres -->
+        <div class="nc-agents-toolbar">
+            <form method="get" class="nc-toolbar-form">
+                <div class="nc-search-agents">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input
+                        type="text"
+                        name="q"
+                        value="{{ recherche }}"
+                        placeholder="Rechercher par nom ou ID..."
+                        class="nc-search-agents-input"
+                    >
+                </div>
+                <button type="submit" class="nc-btn-ghost nc-btn-sm">
+                    <i class="fa-solid fa-filter"></i> Filtrer
+                </button>
+                <!-- Conserver agent_id si sélectionné -->
+                {% if agent_selectionne %}
+                <input type="hidden" name="agent_id" value="{{ agent_selectionne.pk }}">
+                {% endif %}
+            </form>
+            <span class="nc-agents-count">{{ nb_agents }} agent{{ nb_agents|pluralize:"s" }} trouvé{{ nb_agents|pluralize:"s" }}</span>
+        </div>
+
+        <!-- Tableau -->
+        <div class="nc-agents-table-container">
+            <table class="nc-agents-table">
+                <thead>
+                    <tr>
+                        <th>Agent</th>
+                        <th>Zone</th>
+                        <th>Sync. Blockchain</th>
+                        <th>Dernière activité</th>
+                        <th>Statut</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for agent in page_obj %}
+                    <tr class="nc-agent-row {% if agent_selectionne and agent_selectionne.pk == agent.pk %}active{% endif %}"
+                        data-agent-id="{{ agent.pk }}"
+                        onclick="selectionnerAgent({{ agent.pk }})">
+
+                        <!-- Agent : avatar + nom + code -->
+                        <td class="nc-agent-cell-identite">
+                            <div class="nc-agent-mini-avatar">
+                                {% if agent.utilisateur.photo %}
+                                    <img src="{{ agent.utilisateur.photo.url }}" alt="">
+                                {% else %}
+                                    <span>
+                                        {{ agent.utilisateur.prenom|first|upper }}{{ agent.utilisateur.nom|first|upper }}
+                                    </span>
+                                {% endif %}
+                                <!-- Point de présence en ligne -->
+                                <span class="nc-presence-dot {% if agent.est_en_ligne %}nc-presence-online{% else %}nc-presence-offline{% endif %}"></span>
+                            </div>
+                            <div>
+                                <div class="nc-agent-nom">{{ agent.get_nom_complet }}</div>
+                                <div class="nc-agent-code">{{ agent.code_agent }}</div>
+                            </div>
+                        </td>
+
+                        <!-- Zone -->
+                        <td class="nc-agent-zone">
+                            <i class="fa-solid fa-location-dot nc-zone-icon"></i>
+                            {{ agent.secteur }}
+                        </td>
+
+                        <!-- Taux de sync blockchain -->
+                        <td class="nc-agent-sync">
+                            <span class="nc-sync-taux {% if agent.taux_sync_blockchain < 60 %}nc-sync-critique{% elif agent.taux_sync_blockchain < 80 %}nc-sync-moyen{% else %}nc-sync-bon{% endif %}">
+                                {{ agent.taux_sync_blockchain }}%
+                            </span>
+                            {% if agent.taux_sync_blockchain < 60 %}
+                            <div class="nc-sync-barre nc-sync-barre-critique" style="width:{{ agent.taux_sync_blockchain }}%"></div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Dernière activité -->
+                        <td class="nc-agent-activite">
+                            {% if agent.derniere_activite %}
+                                Il y a {{ agent.derniere_activite|timesince }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+
+                        <!-- Statut badge -->
+                        <td>
+                            {% if agent.statut == 'actif' %}
+                                <span class="nc-badge nc-badge-success">Actif</span>
+                            {% elif agent.statut == 'suspendu' %}
+                                <span class="nc-badge nc-badge-danger">Suspendu</span>
+                            {% elif agent.statut == 'conge' %}
+                                <span class="nc-badge nc-badge-warning">En congé</span>
+                            {% else %}
+                                <span class="nc-badge nc-badge-info">Inactif</span>
+                            {% endif %}
+                            {% if agent.est_en_ligne and agent.statut == 'actif' %}
+                                <span class="nc-badge nc-badge-info ms-1">En ligne</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Menu actions -->
+                        <td>
+                            <div class="dropdown">
+                                <button class="nc-agent-menu-btn dropdown-toggle" data-bs-toggle="dropdown" onclick="event.stopPropagation()">
+                                    <i class="fa-solid fa-ellipsis-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu nc-dropdown">
+                                    <li>
+                                        <a class="dropdown-item" href="?agent_id={{ agent.pk }}&q={{ recherche }}">
+                                            <i class="fa-solid fa-eye me-2"></i>Voir le profil
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <form method="post" action="{% url 'agents:changer_statut' agent.pk %}">
+                                            {% csrf_token %}
+                                            {% if agent.statut == 'actif' %}
+                                            <input type="hidden" name="action" value="suspendre">
+                                            <button type="submit" class="dropdown-item text-danger">
+                                                <i class="fa-solid fa-ban me-2"></i>Suspendre
+                                            </button>
+                                            {% else %}
+                                            <input type="hidden" name="action" value="reactiver">
+                                            <button type="submit" class="dropdown-item text-success">
+                                                <i class="fa-solid fa-check me-2"></i>Réactiver
+                                            </button>
+                                            {% endif %}
+                                        </form>
+                                    </li>
+                                </ul>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="nc-table-vide">
+                            <i class="fa-solid fa-users-slash"></i>
+                            <p>Aucun agent trouvé</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="nc-pagination">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&q={{ recherche }}&statut={{ filtre_statut }}" class="nc-page-btn">
+                <i class="fa-solid fa-chevron-left"></i> Précédent
+            </a>
+            {% endif %}
+            <span class="nc-page-info">
+                Page {{ page_obj.number }} / {{ page_obj.paginator.num_pages }}
+            </span>
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&q={{ recherche }}&statut={{ filtre_statut }}" class="nc-page-btn">
+                Suivant <i class="fa-solid fa-chevron-right"></i>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+    </div><!-- fin tableau -->
+
+    <!-- ===== PANNEAU LATÉRAL : Détail agent sélectionné ===== -->
+    {% if agent_selectionne %}
+    <aside class="nc-agent-detail">
+
+        <!-- Avatar + nom + statut -->
+        <div class="nc-detail-header">
+            <div class="nc-detail-avatar">
+                {% if agent_selectionne.utilisateur.photo %}
+                    <img src="{{ agent_selectionne.utilisateur.photo.url }}" alt="">
+                {% else %}
+                    <span>
+                        {{ agent_selectionne.utilisateur.prenom|first|upper }}{{ agent_selectionne.utilisateur.nom|first|upper }}
+                    </span>
+                {% endif %}
+            </div>
+            <div class="nc-detail-identite">
+                <h3>{{ agent_selectionne.get_nom_complet }}</h3>
+                <span class="nc-detail-code">{{ agent_selectionne.code_agent }}</span>
+            </div>
+            {% if agent_selectionne.statut == 'actif' %}
+            <span class="nc-badge nc-badge-success">Actif</span>
+            {% else %}
+            <span class="nc-badge nc-badge-danger">{{ agent_selectionne.get_statut_display }}</span>
+            {% endif %}
+        </div>
+
+        <!-- Coordonnées -->
+        <div class="nc-detail-coords">
+            <div class="nc-detail-coord-item">
+                <i class="fa-solid fa-envelope"></i>
+                <span>{{ agent_selectionne.utilisateur.email }}</span>
+            </div>
+            <div class="nc-detail-coord-item">
+                <i class="fa-solid fa-phone"></i>
+                <span>{{ agent_selectionne.utilisateur.telephone|default:"—" }}</span>
+            </div>
+            <div class="nc-detail-coord-item">
+                <i class="fa-regular fa-calendar"></i>
+                <span>Inscrit le {{ agent_selectionne.date_creation|date:"d M Y" }}</span>
+            </div>
+        </div>
+
+        <!-- Performance -->
+        <div class="nc-detail-section">
+            <h4 class="nc-detail-section-titre">
+                <i class="fa-solid fa-chart-line"></i> Performance Récente
+            </h4>
+            <div class="nc-detail-stats">
+                <div class="nc-detail-stat">
+                    <span class="nc-detail-stat-nombre">{{ agent_selectionne.actes_aujourd_hui }}</span>
+                    <span class="nc-detail-stat-label">ACTES<br>CRÉÉS</span>
+                </div>
+                <div class="nc-detail-stat nc-detail-stat-alerte">
+                    <span class="nc-detail-stat-nombre">{{ agent_selectionne.taux_sync_blockchain }}%</span>
+                    <span class="nc-detail-stat-label">TAUX<br>D'ERREUR</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Zone d'intervention -->
+        <div class="nc-detail-section">
+            <h4 class="nc-detail-section-titre">
+                <i class="fa-solid fa-location-dot"></i> Zone d'intervention
+            </h4>
+            <div class="nc-detail-zone">
+                <div class="nc-detail-zone-info">
+                    <span class="nc-detail-zone-nom">{{ agent_selectionne.secteur }}</span>
+                    <span class="nc-detail-zone-sous">DÉPLOIEMENT ACTIF</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Alerte sync -->
+        {% if agent_selectionne.actes_non_synchronises > 0 %}
+        <div class="nc-detail-alerte-sync">
+            <i class="fa-solid fa-wave-square"></i>
+            <div>
+                <span class="nc-detail-alerte-titre">Alerte Synchronisation</span>
+                <p>L'agent a {{ agent_selectionne.actes_non_synchronises }} enregistrement{{ agent_selectionne.actes_non_synchronises|pluralize:"s" }} en attente de synchronisation.</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="nc-detail-actions">
+            <form method="post" action="{% url 'agents:changer_statut' agent_selectionne.pk %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="{% if agent_selectionne.statut == 'actif' %}suspendre{% else %}reactiver{% endif %}">
+                <button type="button" class="nc-btn-outline nc-btn-sm nc-btn-reassigner"
+                        data-agent-id="{{ agent_selectionne.pk }}"
+                        onclick="ouvrirReassigner({{ agent_selectionne.pk }})">
+                    <i class="fa-solid fa-shuffle"></i> Réassigner
+                </button>
+                {% if agent_selectionne.statut == 'actif' %}
+                <button type="submit" class="nc-btn-suspendre">
+                    <i class="fa-solid fa-ban"></i> Suspendre
+                </button>
+                {% else %}
+                <button type="submit" class="nc-btn-success" style="flex:1">
+                    <i class="fa-solid fa-check"></i> Réactiver
+                </button>
+                {% endif %}
+            </form>
+        </div>
+
+    </aside>
+    {% else %}
+    <!-- Panneau vide quand aucun agent sélectionné -->
+    <aside class="nc-agent-detail nc-detail-vide">
+        <i class="fa-solid fa-user-magnifying-glass"></i>
+        <p>Cliquez sur un agent pour voir son profil détaillé</p>
+    </aside>
+    {% endif %}
+
+</div><!-- fin layout -->
+
+<!-- ===== MODALE NOUVEL AGENT ===== -->
+<div id="modalNouvelAgent" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:28px; width:100%; max-width:520px; margin:20px; max-height:90vh; overflow-y:auto;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:18px; font-weight:700; color:#0d1b3e;">
+                <i class="fa-solid fa-user-plus me-2" style="color:#1a73e8;"></i>Nouvel Agent
+            </h3>
+            <button id="btnFermerModalAgent" style="background:#f1f5f9; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; color:#64748b;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="post" action="{% url 'agents:creer' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">PRÉNOM</label>
+                    <input type="text" name="prenom" required class="form-control" placeholder="Ex: Mamadou">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">NOM</label>
+                    <input type="text" name="nom" required class="form-control" placeholder="Ex: Diallo">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">EMAIL</label>
+                    <input type="email" name="email" required class="form-control" placeholder="agent@naissancechain.gn">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">TÉLÉPHONE</label>
+                    <input type="text" name="telephone" class="form-control" placeholder="Ex: +224 620 000 000">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">CODE AGENT</label>
+                    <input type="text" name="code_agent" required class="form-control" placeholder="Ex: AG-8821">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">SECTEUR</label>
+                    <input type="text" name="secteur" required class="form-control" placeholder="Ex: Kindia Centre">
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">RÉGION</label>
+                    <select name="region" class="form-select">
+                        <option value="">— Choisir —</option>
+                        <option value="conakry">Conakry</option>
+                        <option value="kindia">Kindia</option>
+                        <option value="boke">Boké</option>
+                        <option value="labe">Labé</option>
+                        <option value="kankan">Kankan</option>
+                        <option value="faranah">Faranah</option>
+                        <option value="nzerekore">Nzérékoré</option>
+                        <option value="mamou">Mamou</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">CENTRE ÉTAT CIVIL</label>
+                    <input type="text" name="centre_etat_civil" class="form-control" placeholder="Ex: Mairie de Kindia">
+                </div>
+                <div style="grid-column:1/-1;">
+                    <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">MOT DE PASSE</label>
+                    <input type="password" name="password" required class="form-control" placeholder="Mot de passe initial">
+                </div>
+            </div>
+            <div id="erreurAgent" style="display:none; background:#fee2e2; border:1px solid #fca5a5; border-radius:8px; padding:10px 14px; margin-top:14px; font-size:13px; color:#b91c1c;"></div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="button" id="btnAnnulerAgent" class="nc-btn-ghost" style="flex:1;">Annuler</button>
+                <button type="submit" class="nc-btn-primary" style="flex:2;">
+                    <i class="fa-solid fa-user-plus"></i>Créer l'agent
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- ===== MODALE RÉASSIGNER ===== -->
+<div id="modalReassigner" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:16px; padding:28px; width:100%; max-width:400px; margin:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <h3 style="margin:0; font-size:18px; font-weight:700; color:#0d1b3e;">
+                <i class="fa-solid fa-shuffle me-2" style="color:#1a73e8;"></i>Réassigner l'agent
+            </h3>
+            <button id="btnFermerModalReassigner" style="background:#f1f5f9; border:none; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px; color:#64748b;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form method="post" action="{% url 'agents:reassigner' 0 %}" id="formReassigner">
+            {% csrf_token %}
+            <input type="hidden" name="agent_id" id="reassignerAgentId">
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">NOUVEAU SECTEUR</label>
+                <input type="text" name="secteur" required class="form-control" placeholder="Ex: Labé Nord" id="reassignerSecteur">
+            </div>
+            <div style="margin-bottom:14px;">
+                <label style="font-size:12px; font-weight:600; color:#64748b; display:block; margin-bottom:5px;">NOUVELLE RÉGION</label>
+                <select name="region" class="form-select" id="reassignerRegion">
+                    <option value="">— Choisir —</option>
+                    <option value="conakry">Conakry</option>
+                    <option value="kindia">Kindia</option>
+                    <option value="boke">Boké</option>
+                    <option value="labe">Labé</option>
+                    <option value="kankan">Kankan</option>
+                    <option value="faranah">Faranah</option>
+                    <option value="nzerekore">Nzérékoré</option>
+                    <option value="mamou">Mamou</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:20px;">
+                <button type="button" id="btnAnnulerReassigner" class="nc-btn-ghost" style="flex:1;">Annuler</button>
+                <button type="submit" class="nc-btn-primary" style="flex:2;">
+                    <i class="fa-solid fa-shuffle"></i>Confirmer
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'agents/js/liste_agents.js' %}"></script>
+<script>
+// Modale Nouvel Agent
+const modalAgent = document.getElementById('modalNouvelAgent');
+document.getElementById('btnNouvelAgent').addEventListener('click', () => modalAgent.style.display = 'flex');
+document.getElementById('btnFermerModalAgent').addEventListener('click', () => modalAgent.style.display = 'none');
+document.getElementById('btnAnnulerAgent').addEventListener('click', () => modalAgent.style.display = 'none');
+modalAgent.addEventListener('click', e => { if (e.target === modalAgent) modalAgent.style.display = 'none'; });
+
+// Modale Réassigner
+const modalReassigner = document.getElementById('modalReassigner');
+window.ouvrirReassigner = function(agentId) {
+    document.getElementById('reassignerAgentId').value = agentId;
+    document.getElementById('formReassigner').action = `/agents/${agentId}/reassigner/`;
+    modalReassigner.style.display = 'flex';
+};
+document.getElementById('btnFermerModalReassigner').addEventListener('click', () => modalReassigner.style.display = 'none');
+document.getElementById('btnAnnulerReassigner').addEventListener('click', () => modalReassigner.style.display = 'none');
+modalReassigner.addEventListener('click', e => { if (e.target === modalReassigner) modalReassigner.style.display = 'none'; });
+</script>
+{% endblock %}

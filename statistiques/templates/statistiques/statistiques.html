@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titre %}Statistiques Nationales{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'statistiques/statistiques.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- EN-TÊTE -->
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px;flex-wrap:wrap;gap:12px">
+    <div>
+        <h1 class="nc-page-titre">
+            <i class="fa-solid fa-chart-column" style="color:#1a73e8"></i> Statistiques Nationales
+        </h1>
+        <p class="nc-page-sous-titre">Suivi stratégique de l'enregistrement des naissances via le registre immuable NaissanceChain.</p>
+    </div>
+    <div style="text-align:right">
+        <div style="font-size:11px;color:#94a3b8">DERNIER BLOC</div>
+        <div style="font-size:14px;font-weight:700;color:#0d1b3e">#{{ dernier_bloc }}</div>
+        <span class="nc-badge nc-badge-success">Système Sain</span>
+    </div>
+</div>
+
+<!-- KPIs -->
+<div class="nc-stat-kpis">
+    <div class="nc-kpi-card">
+        <div class="nc-kpi-valeur">{{ taux_national }}%</div>
+        <div class="nc-kpi-label">Taux National</div>
+        <div class="nc-kpi-variation nc-var-hausse">↑ +2.4% vs mois dernier</div>
+    </div>
+    <div class="nc-kpi-card">
+        <div class="nc-kpi-valeur">{{ total_naissances|floatformat:0 }}</div>
+        <div class="nc-kpi-label">Total Naissances</div>
+        <div class="nc-kpi-variation nc-var-hausse">↑ +12,430 vs mois dernier</div>
+    </div>
+    <div class="nc-kpi-card">
+        <div class="nc-kpi-valeur">{{ taux_synchronisation }}%</div>
+        <div class="nc-kpi-label">Taux Synchronisation</div>
+        <div class="nc-kpi-variation nc-var-hausse">↑ +0.1% vs mois dernier</div>
+    </div>
+    <div class="nc-kpi-card">
+        <div class="nc-kpi-valeur">{{ zones_en_alerte }}</div>
+        <div class="nc-kpi-label">Zones en Alerte</div>
+        <div class="nc-kpi-variation nc-var-baisse">↓ -3 vs mois dernier</div>
+    </div>
+</div>
+
+<!-- LAYOUT PRINCIPAL -->
+<div class="nc-stat-layout">
+
+    <!-- COLONNE GAUCHE -->
+    <div class="nc-stat-col-gauche">
+
+        <!-- Couverture Géographique -->
+        <div class="nc-card" style="margin-bottom:20px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <div>
+                    <h2 class="nc-carte-titre"><i class="fa-solid fa-map" style="color:#1a73e8"></i> Couverture Géographique</h2>
+                    <p class="nc-carte-sous">Densité des enregistrements par région administrative</p>
+                </div>
+                <span style="background:#d1fae5;color:#065f46;font-size:11px;font-weight:700;padding:4px 10px;border-radius:10px">Live Blockchain</span>
+            </div>
+            <div class="nc-geo-grid">
+                {% for region in couverture_regions %}
+                <div class="nc-geo-cell nc-geo-{{ region.niveau }}">
+                    <span class="nc-geo-nom">{{ region.nom }}</span>
+                    <span class="nc-geo-taux">{{ region.taux }}%</span>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="nc-geo-legende">
+                <span><span class="nc-leg-dot nc-leg-dot-optimal"></span> &gt; 80% (Optimal)</span>
+                <span><span class="nc-leg-dot nc-leg-dot-correct"></span> 60-80% (Correct)</span>
+                <span><span class="nc-leg-dot nc-leg-dot-critique"></span> &lt; 60% (Critique)</span>
+            </div>
+        </div>
+
+        <!-- Tendances & Prévisions -->
+        <div class="nc-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+                <div>
+                    <h2 class="nc-carte-titre"><i class="fa-solid fa-chart-line" style="color:#1a73e8"></i> Tendances & Prévisions IA</h2>
+                    <p class="nc-carte-sous">Projection basée sur les cycles saisonniers et démographiques</p>
+                </div>
+                <span style="font-size:11px;color:#0d9e6e;font-weight:600">
+                    <i class="fa-solid fa-circle" style="font-size:8px"></i> IA Model v4.2
+                </span>
+            </div>
+            <div class="nc-tendances-chart">
+                <div class="nc-chart-legende-ligne">
+                    <span class="nc-leg-records">── records</span>
+                    <span class="nc-leg-projection">- - projection</span>
+                </div>
+                <svg viewBox="0 0 580 160" style="width:100%;height:160px">
+                    <line x1="0" y1="40" x2="580" y2="40" stroke="#f1f5f9" stroke-width="1"/>
+                    <line x1="0" y1="80" x2="580" y2="80" stroke="#f1f5f9" stroke-width="1"/>
+                    <line x1="0" y1="120" x2="580" y2="120" stroke="#f1f5f9" stroke-width="1"/>
+                    <text x="2" y="44" font-size="10" fill="#94a3b8">8000</text>
+                    <text x="2" y="84" font-size="10" fill="#94a3b8">6000</text>
+                    <text x="2" y="124" font-size="10" fill="#94a3b8">4000</text>
+                    <polyline points="40,140 120,118 200,98 280,72 360,55 440,38 520,28"
+                        fill="none" stroke="#1a73e8" stroke-width="2.5"
+                        stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="40"  cy="140" r="4" fill="#1a73e8"/>
+                    <circle cx="120" cy="118" r="4" fill="#1a73e8"/>
+                    <circle cx="200" cy="98"  r="4" fill="#1a73e8"/>
+                    <circle cx="280" cy="72"  r="4" fill="#1a73e8"/>
+                    <circle cx="360" cy="55"  r="4" fill="#1a73e8"/>
+                    <polyline points="360,55 440,30 520,18 580,12"
+                        fill="none" stroke="#0d9e6e" stroke-width="2"
+                        stroke-dasharray="6,4" stroke-linecap="round"/>
+                    <circle cx="440" cy="30" r="4" fill="#0d9e6e"/>
+                    <circle cx="520" cy="18" r="4" fill="#0d9e6e"/>
+                </svg>
+                <div class="nc-chart-labels">
+                    <span>Jan</span><span>Fév</span><span>Mar</span><span>Avr</span>
+                    <span>Mai</span><span>Juin</span><span>Juil</span><span>Août</span>
+                    <span>Sept</span><span>Oct</span><span>Nov</span><span>Déc</span>
+                </div>
+            </div>
+        </div>
+
+    </div><!-- fin col gauche -->
+
+    <!-- COLONNE DROITE -->
+    <div class="nc-stat-col-droite">
+
+        <!-- Performance Régionale -->
+        <div class="nc-card" style="margin-bottom:20px">
+            <h2 class="nc-carte-titre" style="margin-bottom:4px">Performance Régionale</h2>
+            <p class="nc-carte-sous" style="margin-bottom:16px">Comparaison taux actuel vs objectif national</p>
+            {% for region in couverture_regions %}
+            <div class="nc-perf-item">
+                <span class="nc-perf-nom">{{ region.nom }}</span>
+                <div class="nc-perf-barre-wrap">
+                    <div class="nc-perf-barre-bg">
+                        <div class="nc-perf-barre nc-perf-{{ region.niveau }}" style="width:{{ region.taux }}%"></div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Zones de Risque -->
+        <div class="nc-card" style="margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#e53e3e"></i>
+                <h2 class="nc-carte-titre" style="margin:0">Zones de Risque d'Invisibilité</h2>
+            </div>
+            <table class="nc-risque-table">
+                <thead>
+                    <tr><th>Sous-Préfecture</th><th>Taux</th><th>Tendance</th></tr>
+                </thead>
+                <tbody>
+                {% for zone in zones_risque %}
+                <tr>
+                    <td>
+                        <div class="nc-zone-nom">{{ zone.nom }}</div>
+                        <span class="nc-zone-niveau nc-zone-{{ zone.niveau|lower }}">{{ zone.niveau }}</span>
+                    </td>
+                    <td>
+                        <span class="nc-zone-taux {% if zone.taux < 30 %}nc-taux-rouge{% elif zone.taux < 40 %}nc-taux-orange{% else %}nc-taux-jaune{% endif %}">
+                            {{ zone.taux }}%
+                        </span>
+                    </td>
+                    <td>
+                        {% if zone.niveau == 'CRITICAL' %}
+                            <span style="color:#e53e3e"><i class="fa-solid fa-arrow-trend-down"></i></span>
+                        {% elif zone.niveau == 'STABLE' %}
+                            <span style="color:#0d9e6e"><i class="fa-solid fa-arrow-trend-up"></i></span>
+                        {% else %}
+                            <span style="color:#f5a623"><i class="fa-solid fa-minus"></i></span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Flux d'Événements -->
+        <div class="nc-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+                <h2 class="nc-carte-titre" style="margin:0">Flux d'Événements Récents</h2>
+                <span style="font-size:11px;font-weight:700;color:#0d9e6e;background:#d1fae5;padding:3px 10px;border-radius:8px">LIVE UPDATE</span>
+            </div>
+            <div class="nc-flux-events">
+                {% for evt in flux_evenements %}
+                <div class="nc-flux-evt-card">
+                    <div class="nc-flux-evt-icone"><i class="fa-solid {{ evt.icone }}"></i></div>
+                    <div class="nc-flux-evt-texte">{{ evt.texte }}</div>
+                    <div class="nc-flux-evt-temps">{{ evt.temps }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+    </div><!-- fin col droite -->
+
+</div><!-- fin layout -->
+
+<!-- BARRE EXPORT -->
+<div class="nc-stat-export-bar">
+    <div style="display:flex;align-items:center;gap:14px">
+        <i class="fa-solid fa-file-lines" style="color:#1a73e8;font-size:20px"></i>
+        <div>
+            <div style="font-weight:600;color:#0d1b3e;font-size:14px">Générer un rapport national consolidé</div>
+            <div style="font-size:12px;color:#64748b">Format CSV — Toutes les données réelles de la base</div>
+        </div>
+    </div>
+    <div style="display:flex;gap:10px">
+        <button class="nc-btn-outline" onclick="document.getElementById('modal-apercu').style.display='flex'">
+            <i class="fa-solid fa-eye"></i> Aperçu rapide
+        </button>
+        <a href="/statistiques/export/csv/" class="nc-btn-primary">
+            <i class="fa-solid fa-file-csv"></i> Exporter le rapport <i class="fa-solid fa-arrow-right"></i>
+        </a>
+    </div>
+</div>
+
+<!-- MODALE APERCU -->
+<div id="modal-apercu" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:#fff;border-radius:16px;padding:28px;max-width:560px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.2);">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h3 style="font-size:18px;font-weight:800;color:#0d1b3e;margin:0;"><i class="fa-solid fa-eye" style="color:#1a73e8;margin-right:8px;"></i>Aperçu du Rapport</h3>
+            <button onclick="document.getElementById('modal-apercu').style.display='none'" style="background:none;border:none;font-size:20px;cursor:pointer;color:#94a3b8;">&times;</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:20px;">
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;">
+                <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Taux National</div>
+                <div style="font-size:24px;font-weight:800;color:#0d1b3e;">{{ taux_national }}%</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;">
+                <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Total Naissances</div>
+                <div style="font-size:24px;font-weight:800;color:#0d1b3e;">{{ total_naissances|floatformat:0 }}</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;">
+                <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Sync Blockchain</div>
+                <div style="font-size:24px;font-weight:800;color:#0d1b3e;">{{ taux_synchronisation }}%</div>
+            </div>
+            <div style="background:#f8fafc;border-radius:10px;padding:14px;">
+                <div style="font-size:11px;color:#94a3b8;font-weight:700;text-transform:uppercase;margin-bottom:4px;">Zones en Alerte</div>
+                <div style="font-size:24px;font-weight:800;color:#e53e3e;">{{ zones_en_alerte }}</div>
+            </div>
+        </div>
+        <div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px;margin-bottom:20px;font-size:13px;color:#92400e;">
+            <i class="fa-solid fa-circle-info" style="margin-right:6px;"></i>
+            Le rapport CSV contiendra les données réelles de la base : actes, agents, régions.
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;">
+            <button onclick="document.getElementById('modal-apercu').style.display='none'" class="nc-btn-outline">Fermer</button>
+            <a href="/statistiques/export/csv/" class="nc-btn-primary" onclick="document.getElementById('modal-apercu').style.display='none'">
+                <i class="fa-solid fa-file-csv"></i> Télécharger CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

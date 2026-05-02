@@ -1,0 +1,437 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titre %}Outil de Vérification{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'verification/css/verification.css' %}">
+{% endblock %}
+
+{% block content %}
+
+<!-- Fil d'Ariane -->
+<div class="nc-breadcrumb">
+    <a href="{% url 'dashboard:index' %}">Espace Admin</a>
+    <i class="fa-solid fa-chevron-right"></i>
+    <span>Vérification d'Acte</span>
+</div>
+
+<!-- En-tête -->
+<div class="nc-page-header">
+    <div>
+        <h1 class="nc-page-titre">Outil de Vérification</h1>
+        <p class="nc-page-sous-titre">
+            Authentification instantanée des certificats via le registre blockchain national.
+        </p>
+    </div>
+</div>
+
+<div class="nc-verif-layout">
+
+    <!-- ===== COLONNE GAUCHE : Scanner ===== -->
+    <div class="nc-verif-col-g">
+
+        <!-- Zone caméra / QR -->
+        <div class="nc-scanner-zone">
+            <div class="nc-scanner-cadre">
+                <div class="nc-coin nc-coin-tl"></div>
+                <div class="nc-coin nc-coin-tr"></div>
+                <div class="nc-coin nc-coin-bl"></div>
+                <div class="nc-coin nc-coin-br"></div>
+                <div class="nc-scanner-placeholder">
+                    <i class="fa-solid fa-camera"></i>
+                    <span class="nc-scanner-live">
+                        <i class="fa-solid fa-circle" style="color:#e53e3e;font-size:8px"></i>
+                        Flux Caméra en direct
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bouton scan -->
+        <button class="nc-btn-scan" id="btnScan">
+            <i class="fa-solid fa-qrcode"></i> Lancer le scan
+        </button>
+
+        <div class="nc-ou-separateur"><span>ou</span></div>
+
+        <!-- Alternatives -->
+        <div class="nc-alternatives">
+            <button class="nc-btn-alt" id="btnImporter">
+                <i class="fa-solid fa-upload"></i> Importer
+            </button>
+            <button class="nc-btn-alt" id="btnRechercherID">
+                <i class="fa-solid fa-magnifying-glass"></i> Rechercher ID
+            </button>
+        </div>
+
+        <!-- Input fichier caché pour import image QR -->
+        <input type="file" id="inputFichierQR" accept="image/*" style="display:none">
+
+        <!-- Formulaire recherche (caché par défaut si pas de référence) -->
+        <form method="get" action="{% url 'verification:outil' %}" class="nc-form-recherche" id="formRecherche"
+              style="{% if not reference %}display:none{% endif %}">
+            <input
+                type="text"
+                name="ref"
+                value="{{ reference }}"
+                placeholder="Ex: NC-2024-0001-ABCD"
+                class="nc-input-ref"
+                id="champRef"
+            >
+            <button type="submit" class="nc-btn-primary" style="width:100%;margin-top:8px;justify-content:center">
+                <i class="fa-solid fa-shield-check"></i> Vérifier cet acte
+            </button>
+        </form>
+
+        <!-- Conseil agent -->
+        <div class="nc-conseil">
+            <div class="nc-conseil-icone">
+                <i class="fa-solid fa-circle-info"></i>
+            </div>
+            <div>
+                <span class="nc-conseil-titre">Conseil de l'agent</span>
+                <p class="nc-conseil-texte">
+                    Pour une vérification optimale, assurez-vous que le QR code est
+                    bien éclairé et non plié. Le hash blockchain est insensible aux
+                    manipulations physiques.
+                </p>
+            </div>
+        </div>
+
+    </div><!-- fin col gauche -->
+
+    <!-- ===== COLONNE DROITE : Résultat ===== -->
+    <div class="nc-verif-col-d">
+
+        {% if resultat %}
+
+            {% if resultat.acte %}
+            <!-- Acte trouvé -->
+            <div class="nc-resultat-entete">
+                <div>
+                    <p class="nc-breadcrumb" style="margin-bottom:4px">Résultats de l'Acte</p>
+                    <p class="nc-page-sous-titre">Détails extraits du registre cryptographique</p>
+                </div>
+                <span class="nc-ref-badge">{{ resultat.acte.reference }}</span>
+            </div>
+
+            <!-- Badge authenticité -->
+            <div class="nc-auth-badge {% if resultat.valide %}nc-auth-ok{% else %}nc-auth-suspect{% endif %}">
+                <i class="fa-solid {% if resultat.valide %}fa-shield-check{% else %}fa-shield-exclamation{% endif %}"></i>
+                <div>
+                    <strong>
+                        {% if resultat.valide %}ACTE AUTHENTIQUE{% else %}ACTE SUSPECT{% endif %}
+                    </strong>
+                    <p>
+                        {% if resultat.valide %}
+                            Ce document est certifié conforme par la blockchain NaissanceChain.
+                        {% else %}
+                            Ce document n'a pas pu être vérifié sur la blockchain.
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Grille informations -->
+            <div class="nc-verif-grille">
+
+                <!-- Informations enfant -->
+                <div>
+                    <h4 class="nc-verif-col-titre">INFORMATIONS DE L'ENFANT</h4>
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-user"></i>
+                        <span class="nc-vc-label">Nom Complet</span>
+                        <span class="nc-vc-val">{{ resultat.acte.get_nom_complet_enfant }}</span>
+                    </div>
+                    <div class="nc-verif-champ">
+                        <i class="fa-regular fa-calendar"></i>
+                        <span class="nc-vc-label">Date de Naissance</span>
+                        <span class="nc-vc-val">{{ resultat.acte.date_naissance|date:"d M Y" }}</span>
+                    </div>
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-location-dot"></i>
+                        <span class="nc-vc-label">Lieu</span>
+                        <span class="nc-vc-val">{{ resultat.acte.lieu_naissance }}</span>
+                    </div>
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-venus-mars"></i>
+                        <span class="nc-vc-label">Sexe</span>
+                        <span class="nc-vc-val">{{ resultat.acte.get_sexe_display }}</span>
+                    </div>
+                </div>
+
+                <!-- Origine enregistrement -->
+                <div>
+                    <h4 class="nc-verif-col-titre">ORIGINE DE L'ENREGISTREMENT</h4>
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-user-tie"></i>
+                        <span class="nc-vc-label">Agent Responsable</span>
+                        <span class="nc-vc-val">{{ resultat.acte.agent.get_nom_complet }}</span>
+                    </div>
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-building"></i>
+                        <span class="nc-vc-label">Centre d'état civil</span>
+                        <span class="nc-vc-val">{{ resultat.acte.centre_etat_civil|default:"—" }}</span>
+                    </div>
+                    {% if resultat.acte.latitude_enregistrement %}
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-location-crosshairs"></i>
+                        <span class="nc-vc-label">Coordonnées GPS</span>
+                        <span class="nc-vc-val">{{ resultat.acte.latitude_enregistrement }}, {{ resultat.acte.longitude_enregistrement }}</span>
+                    </div>
+                    {% endif %}
+                    <div class="nc-verif-champ">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span class="nc-vc-label">Statut Sync</span>
+                        <span class="nc-vc-val">
+                            {% if resultat.acte.est_synchronise %}
+                            <span class="nc-badge nc-badge-success">Synchronisé</span>
+                            {% else %}
+                            <span class="nc-badge nc-badge-warning">En attente</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+            </div><!-- fin grille -->
+
+            <!-- Preuve blockchain -->
+            {% if resultat.acte.hash_blockchain %}
+            <div class="nc-preuve-blockchain">
+                <h4 class="nc-verif-col-titre" style="margin-bottom:12px">
+                    <i class="fa-solid fa-link"></i> Preuve Blockchain
+                </h4>
+                <div class="nc-preuve-grid">
+                    <div class="nc-preuve-item">
+                        <span class="nc-preuve-label">
+                            <i class="fa-solid fa-link"></i> Transaction Hash
+                        </span>
+                        <span class="nc-preuve-val nc-hash-court">
+                            {{ resultat.acte.transaction_hash|truncatechars:14 }}
+                        </span>
+                    </div>
+                    <div class="nc-preuve-item">
+                        <span class="nc-preuve-label">
+                            <i class="fa-solid fa-cube"></i> Index du Bloc
+                        </span>
+                        <span class="nc-preuve-val">#{{ resultat.acte.index_bloc|default:"—" }}</span>
+                    </div>
+                    <div class="nc-preuve-item">
+                        <span class="nc-preuve-label">
+                            <i class="fa-solid fa-fingerprint"></i> Signature Agent
+                        </span>
+                        <span class="nc-preuve-val">AG-GUINEE-{{ resultat.acte.agent.code_agent }}</span>
+                    </div>
+                    <div class="nc-preuve-item">
+                        <span class="nc-preuve-label">
+                            <i class="fa-regular fa-clock"></i> Horodatage
+                        </span>
+                        <span class="nc-preuve-val">
+                            {% if resultat.acte.date_sync %}
+                                {{ resultat.acte.date_sync|date:"d/m/Y - H:i:s" }}
+                            {% else %}—{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="nc-preuve-actions">
+                    <button class="nc-btn-outline nc-btn-sm"
+                            onclick="copierHash('{{ resultat.acte.hash_blockchain }}')">
+                        <i class="fa-regular fa-copy"></i> Copier Hash
+                    </button>
+                    <a href="#" class="nc-btn-outline nc-btn-sm">
+                        <i class="fa-solid fa-arrow-up-right-from-square"></i> Explorer
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Actions -->
+            <div class="nc-verif-actions">
+                <button class="nc-btn-signaler">
+                    <i class="fa-solid fa-flag"></i> Signaler Anomalie
+                </button>
+                <button class="nc-btn-enquete">
+                    <i class="fa-solid fa-magnifying-glass"></i> Lancer Enquête
+                </button>
+            </div>
+
+            <!-- Simulateurs dev -->
+            <div class="nc-simulateurs">
+                <span style="color:#94a3b8;font-size:12px">Simuler :</span>
+                <a href="?ref={{ resultat.acte.reference }}">Valide</a>
+                <a href="?ref=INVALID">Suspect</a>
+                <a href="?ref=INCONNU">Inconnu</a>
+            </div>
+
+            {% else %}
+            <!-- Acte non trouvé -->
+            <div class="nc-verif-vide">
+                <i class="fa-solid fa-file-circle-xmark" style="color:#e2e8f0;font-size:64px;display:block;margin-bottom:16px"></i>
+                <h3>Acte introuvable</h3>
+                <p>{{ resultat.erreur }}</p>
+            </div>
+            {% endif %}
+
+        {% else %}
+        <!-- État initial -->
+        <div class="nc-verif-vide">
+            <i class="fa-solid fa-shield-check" style="color:#e2e8f0;font-size:64px;display:block;margin-bottom:16px"></i>
+            <h3 style="color:#94a3b8">Aucun acte sélectionné</h3>
+            <p style="color:#cbd5e1">
+                Scannez un QR Code ou saisissez une référence pour vérifier un acte.
+            </p>
+        </div>
+        {% endif %}
+
+    </div><!-- fin col droite -->
+
+</div><!-- fin layout -->
+
+<!-- Modale Scanner QR -->
+<div id="modalScanner" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#1e293b; border-radius:20px; padding:28px; width:100%; max-width:420px; margin:20px; position:relative;">
+        <!-- Header -->
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:10px; color:#fff;">
+                <i class="fa-solid fa-qrcode" style="font-size:18px; color:#1a73e8;"></i>
+                <span style="font-weight:700; font-size:16px;">Scanner un QR Code</span>
+            </div>
+            <button id="btnFermerModal" style="background:rgba(255,255,255,0.1); border:none; color:#fff; width:32px; height:32px; border-radius:50%; cursor:pointer; font-size:16px;">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+        <!-- Zone caméra -->
+        <div style="position:relative; border-radius:14px; overflow:hidden; background:#000; margin-bottom:16px;">
+            <!-- Coins du cadre de scan -->
+            <div style="position:absolute; inset:0; z-index:2; pointer-events:none;">
+                <div style="position:absolute; top:20px; left:20px; width:30px; height:30px; border-top:3px solid #1a73e8; border-left:3px solid #1a73e8; border-radius:4px 0 0 0;"></div>
+                <div style="position:absolute; top:20px; right:20px; width:30px; height:30px; border-top:3px solid #1a73e8; border-right:3px solid #1a73e8; border-radius:0 4px 0 0;"></div>
+                <div style="position:absolute; bottom:20px; left:20px; width:30px; height:30px; border-bottom:3px solid #1a73e8; border-left:3px solid #1a73e8; border-radius:0 0 0 4px;"></div>
+                <div style="position:absolute; bottom:20px; right:20px; width:30px; height:30px; border-bottom:3px solid #1a73e8; border-right:3px solid #1a73e8; border-radius:0 0 4px 0;"></div>
+                <!-- Ligne de scan animée -->
+                <div id="ligneScan" style="position:absolute; left:20px; right:20px; height:2px; background:linear-gradient(90deg, transparent, #1a73e8, transparent); top:20px; animation: scanLine 2s linear infinite;"></div>
+            </div>
+            <div id="readerQR" style="width:100%; min-height:280px;"></div>
+        </div>
+
+        <!-- Statut -->
+        <div id="statutScan" style="text-align:center; color:rgba(255,255,255,0.6); font-size:13px; margin-bottom:16px;">
+            <i class="fa-solid fa-circle-notch fa-spin me-2"></i> Initialisation de la caméra...
+        </div>
+
+        <!-- Bouton fermer -->
+        <button id="btnAnnulerScan" style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:#fff; padding:11px; border-radius:10px; font-size:14px; font-weight:600; cursor:pointer;">
+            <i class="fa-solid fa-xmark me-2"></i> Annuler
+        </button>
+    </div>
+</div>
+
+<style>
+@keyframes scanLine {
+    0%   { top: 20px; }
+    50%  { top: calc(100% - 22px); }
+    100% { top: 20px; }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Librairie html5-qrcode -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script>
+function copierHash(hash) {
+    navigator.clipboard.writeText(hash).then(function () {
+        alert('Hash copié dans le presse-papiers !');
+    });
+}
+
+let html5QrCode = null;
+
+function ouvrirScanner() {
+    const modal = document.getElementById('modalScanner');
+    modal.style.display = 'flex';
+    document.getElementById('statutScan').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin me-2"></i> Initialisation de la caméra...';
+
+    html5QrCode = new Html5Qrcode('readerQR');
+
+    Html5Qrcode.getCameras().then(cameras => {
+        if (!cameras || cameras.length === 0) {
+            document.getElementById('statutScan').innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2" style="color:#f5a623;"></i> Aucune caméra détectée.';
+            return;
+        }
+
+        // Préférer la caméra arrière
+        const camera = cameras.find(c => c.label.toLowerCase().includes('back') || c.label.toLowerCase().includes('arrière')) || cameras[0];
+
+        html5QrCode.start(
+            camera.id,
+            { fps: 10, qrbox: { width: 220, height: 220 } },
+            function onScanSuccess(decodedText) {
+                // QR scanné — extraire la référence
+                const ref = decodedText.trim();
+                fermerScanner();
+                // Remplir le champ et soumettre
+                document.getElementById('champRef').value = ref;
+                document.getElementById('formRecherche').submit();
+            },
+            function onScanFailure() { /* silence */ }
+        ).then(() => {
+            document.getElementById('statutScan').innerHTML = '<i class="fa-solid fa-circle" style="color:#0d9e6e; font-size:8px;"></i> Caméra active — Pointez vers un QR Code';
+        }).catch(err => {
+            document.getElementById('statutScan').innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2" style="color:#e53e3e;"></i> Accès caméra refusé. Vérifiez les permissions.';
+        });
+
+    }).catch(() => {
+        document.getElementById('statutScan').innerHTML = '<i class="fa-solid fa-triangle-exclamation me-2" style="color:#e53e3e;"></i> Impossible d\'accéder à la caméra.';
+    });
+}
+
+function fermerScanner() {
+    if (html5QrCode) {
+        html5QrCode.stop().catch(() => {}).finally(() => {
+            html5QrCode.clear();
+            html5QrCode = null;
+        });
+    }
+    document.getElementById('modalScanner').style.display = 'none';
+}
+
+document.getElementById('btnScan').addEventListener('click', ouvrirScanner);
+document.getElementById('btnFermerModal').addEventListener('click', fermerScanner);
+document.getElementById('btnAnnulerScan').addEventListener('click', fermerScanner);
+
+// Fermer en cliquant sur le fond
+document.getElementById('modalScanner').addEventListener('click', function(e) {
+    if (e.target === this) fermerScanner();
+});
+
+// Bouton Rechercher ID : afficher/masquer le formulaire
+document.getElementById('btnRechercherID').addEventListener('click', function () {
+    const form = document.getElementById('formRecherche');
+    const visible = form.style.display !== 'none';
+    form.style.display = visible ? 'none' : 'block';
+    if (!visible) document.getElementById('champRef').focus();
+});
+
+// Bouton Importer : ouvrir le sélecteur de fichier image QR
+document.getElementById('btnImporter').addEventListener('click', function () {
+    document.getElementById('inputFichierQR').click();
+});
+
+document.getElementById('inputFichierQR').addEventListener('change', function () {
+    const fichier = this.files[0];
+    if (!fichier) return;
+    const scanner = new Html5Qrcode('readerQR');
+    Html5Qrcode.scanFile(fichier, true).then(function (ref) {
+        document.getElementById('champRef').value = ref.trim();
+        document.getElementById('formRecherche').style.display = 'block';
+        document.getElementById('formRecherche').submit();
+    }).catch(function () {
+        alert('Impossible de lire un QR Code dans cette image.');
+    });
+});
+</script>
+{% endblock %}

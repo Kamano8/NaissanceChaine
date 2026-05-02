@@ -1,0 +1,254 @@
+/* ============================================================
+   NaissanceChain — UI PRO BLEU SOMBRE
+   ============================================================ */
+
+/* ===== VARIABLES ===== */
+:root {
+    --bg-main: #0F172A;
+    --bg-card: #FFFFFF;
+    --blue: #1D4ED8;
+    --blue-hover: #1E40AF;
+    --green: #10B981;
+    --orange: #F59E0B;
+    --text-dark: #0F172A;
+    --text-light: #64748B;
+    --border: #E2E8F0;
+}
+
+/* ===== BODY ===== */
+body {
+    background: var(--bg-main);
+    margin: 0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* ===== CONTAINER ===== */
+.nc-container {
+    max-width: 1100px;
+    margin: 30px auto;
+    padding: 10px;
+}
+
+/* ===== CARDS ===== */
+.nc-form-section,
+.nc-etapes-bar,
+.nc-parent-card,
+.nc-gps-card,
+.nc-validation-resume,
+.nc-assistance-vocale {
+    background: var(--bg-card);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+
+.nc-form-section:hover {
+    transform: translateY(-2px);
+}
+
+/* ===== TITRES ===== */
+.nc-form-section-titre {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 18px;
+}
+
+/* ===== INPUT ===== */
+.nc-input {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: 1.5px solid var(--border);
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.nc-input:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(29,78,216,0.1);
+    outline: none;
+}
+
+/* ===== LABEL ===== */
+.nc-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    display: block;
+    font-size: 13px;
+}
+
+/* ===== ROW ===== */
+.nc-field-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+/* ===== ETAPES ===== */
+.nc-etapes-bar {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px;
+    overflow-x: auto;
+}
+
+.nc-etape-item {
+    text-align: center;
+    flex: 1;
+}
+
+.nc-etape-cercle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #E2E8F0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: auto;
+}
+
+.nc-etape-item.active .nc-etape-cercle {
+    background: var(--blue);
+    color: white;
+}
+
+.nc-etape-item.done .nc-etape-cercle {
+    background: var(--green);
+    color: white;
+}
+
+.nc-etape-label {
+    font-size: 10px;
+    margin-top: 6px;
+}
+
+/* ===== BUTTONS ===== */
+.nc-btn-suivant {
+    background: linear-gradient(135deg, #1D4ED8, #2563EB);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: 0.2s;
+}
+
+.nc-btn-suivant:hover {
+    background: var(--blue-hover);
+    transform: translateY(-1px);
+}
+
+.nc-btn-precedent {
+    border: 1px solid var(--border);
+    padding: 12px 20px;
+    border-radius: 12px;
+    background: white;
+    cursor: pointer;
+}
+
+.nc-form-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+/* ===== RADIO ===== */
+.nc-radio-group {
+    display: flex;
+    gap: 10px;
+}
+
+.nc-radio-option {
+    flex: 1;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    cursor: pointer;
+    text-align: center;
+}
+
+.nc-radio-option input {
+    display: none;
+}
+
+.nc-radio-option:has(input:checked) {
+    background: #EFF6FF;
+    border-color: var(--blue);
+}
+
+/* ===== CHECKBOX ===== */
+.nc-checkbox-custom {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--blue);
+    display: inline-block;
+    border-radius: 4px;
+    margin-right: 6px;
+}
+
+.nc-checkbox-label input:checked + .nc-checkbox-custom {
+    background: var(--blue);
+}
+
+/* ===== UPLOAD ===== */
+.nc-upload-zone {
+    border: 2px dashed var(--border);
+    padding: 30px;
+    text-align: center;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+.nc-upload-zone:hover {
+    border-color: var(--blue);
+    background: #EFF6FF;
+}
+
+/* ===== GPS ===== */
+.nc-gps-card {
+    position: relative;
+}
+
+.nc-gps-refresh {
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--blue);
+}
+
+/* ===== BADGES ===== */
+.nc-badge {
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+}
+
+.nc-badge-success {
+    background: #D1FAE5;
+    color: #065F46;
+}
+
+.nc-badge-warning {
+    background: #FEF3C7;
+    color: #92400E;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .nc-field-row {
+        grid-template-columns: 1fr;
+    }
+
+    .nc-container {
+        margin: 10px;
+    }
+}

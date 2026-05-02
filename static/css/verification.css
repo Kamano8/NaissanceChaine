@@ -1,0 +1,30 @@
+/* admin_national/verification.css */
+.scanner-viewport {
+    aspect-ratio: 1;
+    background: #000;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.scanner-overlay {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 70%;
+    height: 70%;
+    border: 2px solid #007bff;
+    box-shadow: 0 0 0 1000px rgba(0,0,0,0.5);
+}
+
+.result-card {
+    border: 1px solid #e9ecef;
+    border-radius: 10px;
+}
+
+.blockchain-proof {
+    background: #f0f7ff;
+    font-family: monospace;
+    font-size: 0.85rem;
+}

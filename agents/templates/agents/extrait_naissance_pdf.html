@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Extrait_{{ acte.reference }}</title>
+    <style>
+        @page { size: A4; margin: 20mm; }
+        body { font-family: "Times New Roman", serif; color: #333; line-height: 1.5; }
+        .certificate-container { border: 5px double #000; padding: 30px; position: relative; min-height: 250mm; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .republique { font-weight: bold; font-size: 1.2rem; text-transform: uppercase; }
+        .devise { font-style: italic; font-size: 0.9rem; }
+        .titre-document { font-size: 1.8rem; font-weight: bold; text-decoration: underline; margin: 20px 0; text-transform: uppercase; }
+        
+        .info-section { margin-bottom: 15px; display: flex; }
+        .label { font-weight: bold; min-width: 200px; }
+        .value { border-bottom: 1px dotted #000; flex: 1; }
+        
+        .qr-code-zone { position: absolute; top: 30px; right: 30px; width: 100px; height: 100px; border: 1px solid #ccc; text-align: center; font-size: 0.6rem; }
+        .footer-sigs { margin-top: 50px; display: flex; justify-content: space-between; }
+        .signature-box { text-align: center; width: 250px; }
+        
+        .blockchain-verify { 
+            margin-top: 40px; padding: 10px; border: 1px solid #0d1b3e; 
+            background: #f8fafc; font-size: 0.8rem; font-family: monospace;
+        }
+
+        @media print {
+            .no-print { display: none; }
+            body { background: white; }
+            .certificate-container { border: 5px double #000; }
+        }
+    </style>
+</head>
+<body>
+    <div class="no-print" style="background: #f1f5f9; padding: 15px; text-align: center; border-bottom: 1px solid #cbd5e1;">
+        <button onclick="window.print()" style="padding: 10px 20px; cursor: pointer; background: #1a73e8; color: white; border: none; border-radius: 5px; font-weight: bold;">
+            🖨️ IMPRIMER / ENREGISTRER EN PDF
+        </button>
+        <p style="font-size: 0.8rem; color: #64748b;">Astuce : Dans la fenêtre qui s'ouvre, choisissez "Enregistrer au format PDF" comme destination.</p>
+    </div>
+
+    <div class="certificate-container">
+        <div class="qr-code-zone">
+            {% if acte.qr_code %}
+                <img src="{{ acte.qr_code.url }}" style="width: 100%;">
+            {% else %}
+                <div style="padding-top: 35px;">QR CODE<br>AUTHENTICITÉ</div>
+            {% endif %}
+        </div>
+
+        <div class="header">
+            <div class="republique">République de Guinée</div>
+            <div class="devise">Travail — Justice — Solidarité</div>
+            <div style="margin-top: 10px;">Région de : <strong>{{ acte.region_naissance|upper }}</strong></div>
+            <div>Préfecture de : <strong>{{ acte.prefecture|upper }}</strong></div>
+            <div class="titre-document">Extrait de l'Acte de Naissance</div>
+            <div>N° Référence : <strong>{{ acte.reference }}</strong></div>
+        </div>
+
+        <div class="content">
+            <div class="info-section">
+                <span class="label">Nom de l'enfant :</span>
+                <span class="value">{{ acte.nom_enfant|upper }}</span>
+            </div>
+            <div class="info-section">
+                <span class="label">Prénom(s) :</span>
+                <span class="value">{{ acte.prenom_enfant }}</span>
+            </div>
+            <div class="info-section">
+                <span class="label">Né(e) le :</span>
+                <span class="value">{{ acte.date_naissance|date:"d F Y" }} à {{ acte.heure_naissance|default:"--:--" }}</span>
+            </div>
+            <div class="info-section">
+                <span class="label">Lieu de naissance :</span>
+                <span class="value">{{ acte.lieu_naissance }}</span>
+            </div>
+            <div class="info-section">
+                <span class="label">Sexe :</span>
+                <span class="value">{{ acte.get_sexe_display }}</span>
+            </div>
+            <br>
+            <div class="info-section">
+                <span class="label">Père :</span>
+                <span class="value">{{ acte.nom_pere }}</span>
+            </div>
+            <div class="info-section">
+                <span class="label">Mère :</span>
+                <span class="value">{{ acte.nom_mere }}</span>
+            </div>
+        </div>
+
+        <div class="blockchain-verify">
+            <strong>CERTIFICATION BLOCKCHAIN :</strong><br>
+            Statut : {{ acte.get_statut_sync_display }}<br>
+            Hash : {{ acte.hash_blockchain|default:"En attente de scellement..." }}<br>
+            Certifié par NaissanceChain le : {{ acte.date_sync|date:"d/m/Y H:i"|default:"N/A" }}
+        </div>
+
+        <div class="footer-sigs">
+            <div class="signature-box">
+                <p>L'Officier d'État Civil</p>
+                <div style="margin-top: 60px;">(Cachet et Signature)</div>
+            </div>
+            <div class="signature-box">
+                <p>Fait à {{ acte.prefecture }}, le {{ date_impression|date:"d/m/Y" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Lance l'impression automatiquement après chargement
+        window.onload = function() { setTimeout(function(){ window.print(); }, 500); };
+    </script>
+</body>
+</html>

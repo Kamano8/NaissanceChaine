@@ -1,0 +1,428 @@
+/* ============================================================
+   NaissanceChain — CSS Historique des Actes
+   Maquette page 4 : liste mobile-first, filtres, badges statut
+   ============================================================ */
+
+/* ===== EN-TÊTE ===== */
+.nc-histo-header {
+    margin-bottom: 20px;
+}
+
+.nc-histo-titre {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0d1b3e;
+    margin: 0 0 5px;
+    letter-spacing: -0.3px;
+}
+
+.nc-histo-sous {
+    font-size: 13.5px;
+    color: #64748b;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ===== BARRE DE RECHERCHE ===== */
+.nc-histo-search {
+    margin-bottom: 14px;
+}
+
+.nc-search-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: white;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 11px 16px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.nc-search-wrap:focus-within {
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26,115,232,0.1);
+}
+
+.nc-search-wrap > i {
+    color: #94a3b8;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.nc-search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 14px;
+    color: #1e293b;
+    font-family: inherit;
+}
+
+.nc-search-input::placeholder { color: #94a3b8; }
+
+.nc-search-clear {
+    background: none;
+    border: none;
+    color: #94a3b8;
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: color 0.2s;
+}
+
+.nc-search-clear:hover { color: #e53e3e; }
+
+/* ===== FILTRES ONGLETS ===== */
+.nc-histo-filtres {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 18px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    /* Masquer scrollbar */
+    scrollbar-width: none;
+}
+
+.nc-histo-filtres::-webkit-scrollbar { display: none; }
+
+.nc-filtre-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border-radius: 22px;
+    border: 1.5px solid #e2e8f0;
+    background: white;
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.nc-filtre-btn:hover {
+    border-color: #0d1b3e;
+    color: #0d1b3e;
+    background: #f8fafc;
+}
+
+/* Filtre actif — fond bleu marine comme maquette */
+.nc-filtre-btn.active {
+    background: #0d1b3e;
+    color: white;
+    border-color: #0d1b3e;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(13,27,62,0.25);
+}
+
+/* Compteurs dans les filtres */
+.nc-filtre-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.08);
+    color: inherit;
+}
+
+.nc-filtre-btn.active .nc-filtre-count {
+    background: rgba(255,255,255,0.2);
+    color: white;
+}
+
+.nc-count-vert  { background: #d1fae5 !important; color: #065f46 !important; }
+.nc-count-orange { background: #fef3c7 !important; color: #92400e !important; }
+.nc-count-rouge { background: #fee2e2 !important; color: #991b1b !important; }
+
+/* ===== LISTE DES ACTES ===== */
+.nc-histo-liste {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* ===== CARTE ACTE ===== */
+.nc-histo-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: white;
+    border-radius: 16px;
+    padding: 14px 16px;
+    border: 1px solid #e8edf3;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s;
+    box-shadow: 0 1px 6px rgba(13,27,62,0.05);
+    position: relative;
+}
+
+.nc-histo-item:hover {
+    box-shadow: 0 6px 20px rgba(13,27,62,0.10);
+    transform: translateY(-2px);
+    border-color: #bfdbfe;
+    color: inherit;
+    text-decoration: none;
+}
+
+.nc-histo-item:active {
+    transform: translateY(0);
+}
+
+/* ===== AVATAR ENFANT ===== */
+.nc-histo-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    position: relative;
+    overflow: visible;
+}
+
+.nc-histo-avatar img {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #e8edf3;
+}
+
+.nc-histo-avatar-placeholder {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    color: #94a3b8;
+}
+
+/* Icône check blockchain */
+.nc-histo-check {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: #0d9e6e;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* ===== INFORMATIONS ACTE ===== */
+.nc-histo-infos {
+    flex: 1;
+    min-width: 0;
+}
+
+.nc-histo-nom {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0d1b3e;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.nc-histo-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.nc-histo-meta span {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.nc-histo-meta i {
+    color: #94a3b8;
+    font-size: 11px;
+    width: 12px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+/* ===== STATUT BADGES ===== */
+.nc-histo-statut {
+    flex-shrink: 0;
+}
+
+.nc-badge-histo {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid transparent;
+    white-space: nowrap;
+}
+
+/* Synchronisé — vert */
+.nc-badge-histo-sync {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #6ee7b7;
+}
+
+/* En attente — orange */
+.nc-badge-histo-attente {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fcd34d;
+}
+
+/* Erreur — rouge */
+.nc-badge-histo-erreur {
+    background: #fee2e2;
+    color: #991b1b;
+    border-color: #fca5a5;
+}
+
+/* ===== FLÈCHE DE NAVIGATION ===== */
+.nc-histo-fleche {
+    color: #cbd5e1;
+    font-size: 13px;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.nc-histo-item:hover .nc-histo-fleche {
+    color: #1a73e8;
+    transform: translateX(3px);
+}
+
+/* ===== ÉTAT VIDE ===== */
+.nc-histo-vide {
+    text-align: center;
+    padding: 56px 24px;
+    color: #94a3b8;
+}
+
+.nc-histo-vide-icone {
+    width: 72px;
+    height: 72px;
+    background: #f1f5f9;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    color: #94a3b8;
+    margin: 0 auto 16px;
+}
+
+.nc-histo-vide h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: #374151;
+    margin-bottom: 8px;
+}
+
+.nc-histo-vide p {
+    font-size: 14px;
+    color: #94a3b8;
+    margin-bottom: 20px;
+}
+
+/* Bouton nouveau acte */
+.nc-btn-nouveau {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #1a73e8;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s;
+    box-shadow: 0 4px 14px rgba(26,115,232,0.35);
+}
+
+.nc-btn-nouveau:hover {
+    background: #1557b0;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(26,115,232,0.4);
+}
+
+/* Bouton outline petite taille */
+.nc-btn-outline-sm {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1.5px solid #e2e8f0;
+    color: #374151;
+    padding: 9px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+
+.nc-btn-outline-sm:hover {
+    border-color: #1a73e8;
+    color: #1a73e8;
+}
+
+/* ===== ANIMATION ENTRÉE ===== */
+.nc-histo-item {
+    animation: entrerItem 0.3s ease forwards;
+    opacity: 0;
+}
+
+@keyframes entrerItem {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Délai en cascade */
+.nc-histo-item:nth-child(1)  { animation-delay: 0.05s; }
+.nc-histo-item:nth-child(2)  { animation-delay: 0.10s; }
+.nc-histo-item:nth-child(3)  { animation-delay: 0.15s; }
+.nc-histo-item:nth-child(4)  { animation-delay: 0.20s; }
+.nc-histo-item:nth-child(5)  { animation-delay: 0.25s; }
+.nc-histo-item:nth-child(6)  { animation-delay: 0.30s; }
+.nc-histo-item:nth-child(7)  { animation-delay: 0.35s; }
+.nc-histo-item:nth-child(8)  { animation-delay: 0.40s; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 400px) {
+    .nc-histo-item         { gap: 10px; padding: 12px; }
+    .nc-histo-avatar,
+    .nc-histo-avatar img,
+    .nc-histo-avatar-placeholder { width: 46px; height: 46px; }
+    .nc-histo-nom          { font-size: 14px; }
+    .nc-badge-histo        { font-size: 11px; padding: 4px 9px; }
+    .nc-histo-filtres      { gap: 6px; }
+    .nc-filtre-btn         { font-size: 12px; padding: 7px 12px; }
+}

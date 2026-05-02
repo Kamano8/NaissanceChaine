@@ -1,0 +1,292 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titre %}Analyse — {{ id_tx }}{% endblock %}
+
+{% block content %}
+
+<!-- EN-TÊTE -->
+<div class="nc-page-header">
+    <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:48px;height:48px;border-radius:12px;background:#fee2e2;color:#991b1b;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;">
+            <i class="fa-solid fa-magnifying-glass-chart"></i>
+        </div>
+        <div>
+            <h1 class="nc-page-titre">Analyse de Transaction</h1>
+            <p class="nc-page-sous-titre">Identifiant : <strong>{{ id_tx }}</strong> — Généré le {{ analyse_date|date:"d/m/Y à H:i" }}</p>
+        </div>
+    </div>
+    <a href="/audit/" class="nc-btn-outline">
+        <i class="fa-solid fa-arrow-left"></i> Retour à l'audit
+    </a>
+</div>
+
+<!-- LAYOUT -->
+<div style="display:grid;grid-template-columns:1fr 320px;gap:20px;align-items:start;">
+
+    <!-- COLONNE GAUCHE -->
+    <div style="display:flex;flex-direction:column;gap:20px;">
+
+        <!-- VERDICT IA -->
+        <div class="nc-card">
+            <div style="font-size:15px;font-weight:700;color:#0d1b3e;margin-bottom:16px;">
+                <i class="fa-solid fa-robot" style="color:#1a73e8;margin-right:8px;"></i>Verdict de l'Analyse IA
+            </div>
+
+            {% if flag_hors_delai %}
+            <div style="text-align:center;padding:20px;background:#fff5f5;border:2px solid #fed7d7;border-radius:12px;margin-bottom:16px;">
+                <div style="font-size:36px;margin-bottom:8px;">⚠️</div>
+                <div style="font-size:16px;font-weight:800;color:#991b1b;margin-bottom:4px;">Anomalie Confirmée</div>
+                <div style="font-size:13px;color:#c53030;">Modification détectée hors délai réglementaire (&gt; 48h)</div>
+            </div>
+            {% else %}
+            <div style="text-align:center;padding:20px;background:#f0fff4;border:2px solid #9ae6b4;border-radius:12px;margin-bottom:16px;">
+                <div style="font-size:36px;margin-bottom:8px;">✅</div>
+                <div style="font-size:16px;font-weight:800;color:#065f46;margin-bottom:4px;">Aucune Anomalie Critique</div>
+                <div style="font-size:13px;color:#276749;">L'acte respecte les délais et contraintes réglementaires</div>
+            </div>
+            {% endif %}
+
+            {% if flag_hors_delai %}
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fff5f5;border:1px solid #fed7d7;border-radius:10px;margin-bottom:10px;">
+                <i class="fa-solid fa-clock" style="color:#e53e3e;font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#c53030;">Modification Hors-Délai</div>
+                    <div style="font-size:12px;color:#e53e3e;">
+                        Délai : {% if delai_modification %}{{ delai_modification.days }}j{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if acte and not acte.est_synchronise %}
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#fffbeb;border:1px solid #fde68a;border-radius:10px;margin-bottom:10px;">
+                <i class="fa-solid fa-triangle-exclamation" style="color:#d97706;font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#92400e;">Non Synchronisé sur Blockchain</div>
+                    <div style="font-size:12px;color:#b45309;">L'acte n'a pas encore été validé par le réseau distribué</div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if acte and acte.est_synchronise %}
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 14px;background:#f0fff4;border:1px solid #9ae6b4;border-radius:10px;">
+                <i class="fa-solid fa-shield-check" style="color:#38a169;font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#276749;">Intégrité Blockchain Vérifiée</div>
+                    <div style="font-size:12px;color:#38a169;">Hash confirmé sur le réseau NaissanceChain</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- DÉTAILS DE L'ACTE -->
+        {% if acte %}
+        <div class="nc-card">
+            <div style="font-size:15px;font-weight:700;color:#0d1b3e;margin-bottom:16px;">
+                <i class="fa-solid fa-file-lines" style="color:#1a73e8;margin-right:8px;"></i>Acte Concerné
+            </div>
+
+            {% for label, valeur in rows %}
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">{{ label }}</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ valeur }}</span>
+            </div>
+            {% endfor %}
+
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Référence</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.reference }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Enfant</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.prenom_enfant }} {{ acte.nom_enfant }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Date de naissance</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.date_naissance|date:"d/m/Y" }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Lieu</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.lieu_naissance }}, {{ acte.region_naissance }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Père</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.nom_pere }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Mère</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.nom_mere }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Agent</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.agent.get_nom_complet }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Créé le</span>
+                <span style="font-size:13px;font-weight:600;color:#374151;">{{ acte.date_creation|date:"d/m/Y H:i" }}</span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Modifié le</span>
+                <span style="font-size:13px;font-weight:600;color:{% if flag_hors_delai %}#e53e3e{% else %}#374151{% endif %};">
+                    {{ acte.date_modification|date:"d/m/Y H:i" }}
+                    {% if flag_hors_delai %}<i class="fa-solid fa-triangle-exclamation" style="color:#e53e3e;margin-left:6px;"></i>{% endif %}
+                </span>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;">
+                <span style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;">Statut Blockchain</span>
+                <span>
+                    {% if acte.est_synchronise %}
+                        <span class="nc-badge-success"><i class="fa-solid fa-circle-check"></i> Synchronisé</span>
+                    {% elif acte.statut_sync == 'erreur' %}
+                        <span class="nc-badge-danger"><i class="fa-solid fa-circle-xmark"></i> Erreur</span>
+                    {% else %}
+                        <span class="nc-badge-warning"><i class="fa-solid fa-clock"></i> En attente</span>
+                    {% endif %}
+                </span>
+            </div>
+
+            {% if acte.hash_blockchain %}
+            <div style="margin-top:12px;">
+                <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px;">Hash Blockchain</div>
+                <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;font-family:monospace;font-size:11px;color:#475569;word-break:break-all;">{{ acte.hash_blockchain }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% else %}
+        <div class="nc-card" style="text-align:center;padding:32px;">
+            <i class="fa-solid fa-circle-exclamation" style="font-size:32px;color:#e53e3e;margin-bottom:12px;display:block;"></i>
+            <div style="font-size:14px;font-weight:700;color:#0d1b3e;margin-bottom:6px;">Acte Introuvable</div>
+            <div style="font-size:13px;color:#64748b;">Aucun acte correspondant à <strong>{{ id_tx }}</strong> n'a été trouvé.</div>
+        </div>
+        {% endif %}
+
+        <!-- JOURNAL LIÉ -->
+        {% if journal_lie %}
+        <div class="nc-card" style="padding:0;overflow:hidden;">
+            <div style="padding:16px 20px;border-bottom:1px solid #f1f5f9;">
+                <div style="font-size:15px;font-weight:700;color:#0d1b3e;"><i class="fa-solid fa-terminal" style="color:#1a73e8;margin-right:8px;"></i>Journal d'Audit Lié</div>
+            </div>
+            <table style="width:100%;border-collapse:collapse;font-size:13px;">
+                <thead>
+                    <tr style="background:#f8fafc;">
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;">DATE</th>
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;">UTILISATEUR</th>
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;">ACTION</th>
+                        <th style="padding:10px 16px;text-align:left;color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;">STATUT</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for evt in journal_lie %}
+                    <tr style="border-bottom:1px solid #f1f5f9;">
+                        <td style="padding:10px 16px;color:#94a3b8;font-size:12px;">{{ evt.horodatage|date:"d/m/Y H:i" }}</td>
+                        <td style="padding:10px 16px;font-weight:600;color:#374151;">{{ evt.utilisateur.get_nom_complet|default:"Anonyme" }}</td>
+                        <td style="padding:10px 16px;color:#374151;">{{ evt.action }}</td>
+                        <td style="padding:10px 16px;">
+                            {% if evt.statut_http < 400 %}
+                                <span class="nc-badge-success">{{ evt.statut_http }}</span>
+                            {% else %}
+                                <span class="nc-badge-danger">{{ evt.statut_http }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+
+    <!-- COLONNE DROITE -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+
+        <!-- ACTES SIMILAIRES -->
+        <div class="nc-card">
+            <div style="font-size:14px;font-weight:700;color:#0d1b3e;margin-bottom:14px;">
+                <i class="fa-solid fa-copy" style="color:#1a73e8;margin-right:8px;"></i>Actes Similaires
+            </div>
+            {% if actes_similaires %}
+                {% for a in actes_similaires %}
+                <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #f1f5f9;">
+                    <div style="width:32px;height:32px;border-radius:50%;background:#dbeafe;color:#1a73e8;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;">
+                        <i class="fa-solid fa-baby"></i>
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div style="font-size:13px;font-weight:700;color:#0d1b3e;">{{ a.prenom_enfant }} {{ a.nom_enfant }}</div>
+                        <div style="font-size:11px;color:#94a3b8;">{{ a.reference }} — {{ a.date_naissance|date:"d/m/Y" }}</div>
+                    </div>
+                    {% if a.est_synchronise %}
+                        <span class="nc-badge-success" style="font-size:10px;">Sync</span>
+                    {% else %}
+                        <span class="nc-badge-warning" style="font-size:10px;">Attente</span>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            {% else %}
+                <p style="color:#94a3b8;font-size:13px;text-align:center;padding:12px 0;">Aucun acte similaire trouvé.</p>
+            {% endif %}
+        </div>
+
+        <!-- RECOMMANDATIONS -->
+        <div class="nc-card">
+            <div style="font-size:14px;font-weight:700;color:#0d1b3e;margin-bottom:14px;">
+                <i class="fa-solid fa-lightbulb" style="color:#1a73e8;margin-right:8px;"></i>Recommandations
+            </div>
+
+            {% if flag_hors_delai %}
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fff5f5;border:1px solid #fed7d7;border-radius:8px;margin-bottom:8px;">
+                <span style="background:#e53e3e;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">1</span>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#c53030;">Contacter l'agent responsable</div>
+                    <div style="font-size:12px;color:#e53e3e;">Demander une justification écrite</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;margin-bottom:8px;">
+                <span style="background:#d97706;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">2</span>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#92400e;">Vérifier l'intégrité des données</div>
+                    <div style="font-size:12px;color:#b45309;">Comparer avec la copie physique</div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;">
+                <span style="background:#d97706;color:#fff;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;">3</span>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#92400e;">Escalader si nécessaire</div>
+                    <div style="font-size:12px;color:#b45309;">Transmettre au Super Administrateur</div>
+                </div>
+            </div>
+            {% else %}
+            <div style="display:flex;align-items:center;gap:10px;padding:12px;background:#f0fff4;border:1px solid #9ae6b4;border-radius:8px;">
+                <i class="fa-solid fa-circle-check" style="color:#38a169;font-size:18px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:13px;font-weight:700;color:#276749;">Aucune action requise</div>
+                    <div style="font-size:12px;color:#38a169;">L'acte est conforme aux règles</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="nc-card">
+            <div style="font-size:14px;font-weight:700;color:#0d1b3e;margin-bottom:14px;">
+                <i class="fa-solid fa-bolt" style="color:#1a73e8;margin-right:8px;"></i>Actions
+            </div>
+            {% if acte %}
+            <a href="/verification/outil/?ref={{ acte.reference }}" class="nc-btn-primary" style="width:100%;justify-content:center;margin-bottom:8px;">
+                <i class="fa-solid fa-shield-check"></i> Vérifier sur Blockchain
+            </a>
+            {% endif %}
+            <a href="/agents/" class="nc-btn-outline" style="width:100%;justify-content:center;margin-bottom:8px;">
+                <i class="fa-solid fa-users-gear"></i> Gérer les Agents
+            </a>
+            <a href="/audit/" class="nc-btn-outline" style="width:100%;justify-content:center;">
+                <i class="fa-solid fa-arrow-left"></i> Retour à l'Audit
+            </a>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

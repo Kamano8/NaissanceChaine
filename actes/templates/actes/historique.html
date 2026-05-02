@@ -1,0 +1,151 @@
+{% extends "agents/base_agent.html" %}
+{% load static %}
+
+{% block titre %}Historique des Actes{% endblock %}
+
+{% block css_extra %}
+<link rel="stylesheet" href="{% static 'actes/css/historique.css' %}">
+{% endblock %}
+
+{% block contenu %}
+
+<!-- ===== EN-TÊTE ===== -->
+<div class="nc-histo-header">
+    <h1 class="nc-histo-titre">Historique des Actes</h1>
+    <p class="nc-histo-sous">
+        Gérez et vérifiez vos enregistrements récents sur la blockchain.
+    </p>
+</div>
+
+<!-- ===== BARRE DE RECHERCHE ===== -->
+<div class="nc-histo-search">
+    <form method="get">
+        <div class="nc-search-wrap">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+                type="text"
+                name="q"
+                value="{{ recherche }}"
+                placeholder="Rechercher par nom d'enfant..."
+                class="nc-search-input"
+                autocomplete="off"
+            >
+            <input type="hidden" name="filtre" value="{{ filtre }}">
+            {% if recherche %}
+            <button type="button" class="nc-search-clear" onclick="this.closest('form').querySelector('[name=q]').value='';this.closest('form').submit()">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- ===== FILTRES ONGLETS ===== -->
+<div class="nc-histo-filtres">
+    <a href="?filtre=tous"
+       class="nc-filtre-btn {% if filtre == 'tous' or not filtre %}active{% endif %}">
+        Tous
+        <span class="nc-filtre-count">{{ nb_total }}</span>
+    </a>
+    <a href="?filtre=synchronises"
+       class="nc-filtre-btn {% if filtre == 'synchronises' %}active{% endif %}">
+        Synchronisés
+        <span class="nc-filtre-count nc-count-vert">{{ nb_synchronises }}</span>
+    </a>
+    <a href="?filtre=en_attente"
+       class="nc-filtre-btn {% if filtre == 'en_attente' %}active{% endif %}">
+        En attente
+        <span class="nc-filtre-count nc-count-orange">{{ nb_en_attente }}</span>
+    </a>
+    <a href="?filtre=erreurs"
+       class="nc-filtre-btn {% if filtre == 'erreurs' %}active{% endif %}">
+        Erreurs
+        <span class="nc-filtre-count nc-count-rouge">{{ nb_erreurs }}</span>
+    </a>
+</div>
+
+<!-- ===== LISTE DES ACTES ===== -->
+<div class="nc-histo-liste">
+
+    {% for acte in actes %}
+    <a href="{% url 'actes:detail' acte.pk %}" class="nc-histo-item">
+
+        <!-- Avatar enfant -->
+        <div class="nc-histo-avatar">
+            {% if acte.photo_enfant %}
+                <img src="{{ acte.photo_enfant.url }}" alt="Photo {{ acte.prenom_enfant }}">
+            {% else %}
+                <div class="nc-histo-avatar-placeholder">
+                    <i class="fa-solid fa-baby"></i>
+                </div>
+            {% endif %}
+            <!-- Check si synchronisé -->
+            {% if acte.est_synchronise %}
+            <span class="nc-histo-check">
+                <i class="fa-solid fa-circle-check"></i>
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Informations acte -->
+        <div class="nc-histo-infos">
+            <div class="nc-histo-nom">{{ acte.get_nom_complet_enfant }}</div>
+            <div class="nc-histo-meta">
+                <span>
+                    <i class="fa-regular fa-calendar"></i>
+                    {{ acte.date_naissance|date:"d M Y" }}
+                </span>
+                <span>
+                    <i class="fa-solid fa-location-dot"></i>
+                    {{ acte.lieu_naissance }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Badge statut -->
+        <div class="nc-histo-statut">
+            {% if acte.statut_sync == 'synchronise' %}
+            <span class="nc-badge-histo nc-badge-histo-sync">
+                <i class="fa-solid fa-circle-check"></i>
+                Synchronisé
+            </span>
+            {% elif acte.statut_sync == 'en_attente' %}
+            <span class="nc-badge-histo nc-badge-histo-attente">
+                <i class="fa-regular fa-clock"></i>
+                En attente
+            </span>
+            {% elif acte.statut_sync == 'erreur' %}
+            <span class="nc-badge-histo nc-badge-histo-erreur">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                Erreur
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Flèche navigation -->
+        <i class="fa-solid fa-chevron-right nc-histo-fleche"></i>
+
+    </a>
+    {% empty %}
+
+    <!-- État vide -->
+    <div class="nc-histo-vide">
+        <div class="nc-histo-vide-icone">
+            <i class="fa-solid fa-folder-open"></i>
+        </div>
+        <h3>Aucun acte trouvé</h3>
+        {% if recherche %}
+        <p>Aucun résultat pour "<strong>{{ recherche }}</strong>"</p>
+        <a href="?filtre={{ filtre }}" class="nc-btn-outline-sm">
+            Effacer la recherche
+        </a>
+        {% else %}
+        <p>Vous n'avez pas encore enregistré d'acte de naissance.</p>
+        {% endif %}
+    </div>
+
+    {% endfor %}
+
+</div><!-- fin liste -->
+
+{% endblock %}

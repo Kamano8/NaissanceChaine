@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 70vh;">
+    <div class="col-md-5 col-lg-4">
+        <div class="nc-card">
+            <div class="text-center mb-4">
+                <h2 class="fw-bold">Connexion</h2>
+                <p class="text-muted">Accédez à NaissanceChain</p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                {{ formulaire|crispy }}
+                
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-nc-primary">Se connecter</button>
+                </div>
+            </form>
+
+            <div class="mt-3 text-center">
+                <a href="{% url 'accounts:mot_de_passe_oublie' %}" class="text-decoration-none small">Mot de passe oublié ?</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

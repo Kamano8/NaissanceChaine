@@ -1,0 +1,273 @@
+{% extends "agents/base_agent.html" %}
+{% load static %}
+
+{% block titre %}Nouvel Acte — Étape {{ index_etape|add:1 }}/{{ nb_etapes }}{% endblock %}
+
+{% block css_extra %}
+<link rel="stylesheet" href="{% static 'actes/css/nouveau_acte.css' %}">
+<style>
+    /* ===== FOND GLOBAL BLEU SOMBRE ===== */
+    body {
+        background: #0F172A;
+    }
+
+    /* ===== CONTAINER CENTRAL ===== */
+    .nc-container {
+        max-width: 1100px;
+        max-width: 850px;
+        margin: 30px auto;
+        padding: 10px;
+    }
+
+    /* ===== CARDS BLANCHES ===== */
+    /* ===== STYLE GLASSMORPHISM (Cartes & Etapes) ===== */
+    .nc-form-section,
+    .nc-etapes-bar {
+        background: white !important;
+        border-radius: 16px !important;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08) !important;
+        background: rgba(255, 255, 255, 0.08) !important;
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 20px !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3) !important;
+        color: white !important;
+        margin-bottom: 25px;
+    }
+
+    /* Barre d'étapes horizontale */
+    .nc-etapes-bar {
+        display: flex;
+        justify-content: space-around;
+        padding: 20px;
+    }
+
+    .nc-etape-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        opacity: 0.4;
+        transition: all 0.3s ease;
+    }
+
+    .nc-etape-item.active { opacity: 1; transform: scale(1.05); }
+    .nc-etape-item.done { opacity: 0.8; }
+
+    .nc-etape-cercle {
+        width: 42px;
+        height: 42px;
+        border-radius: 50%;
+        background: rgba(255,255,255,0.1);
+        border: 2px solid rgba(255,255,255,0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+
+    .active .nc-etape-cercle {
+        background: #1158e4;
+        border-color: #40c4ff;
+        box-shadow: 0 0 15px rgba(17, 88, 228, 0.6);
+    }
+
+    .done .nc-etape-cercle {
+        background: #0d9e6e;
+        border-color: #6ee7b7;
+    }
+
+    .nc-etape-label {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+    }
+
+    /* Section Formulaire */
+    .nc-form-section {
+        padding: 30px;
+    }
+
+    .nc-form-section-titre {
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin-bottom: 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding-bottom: 12px;
+    }
+
+    .nc-label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+    }
+
+    /* Champs de saisie */
+    .nc-input {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        border-radius: 12px;
+        color: white !important;
+        outline: none;
+        transition: all 0.2s;
+    }
+
+    .nc-input:focus {
+        border-color: #40c4ff !important;
+        background: rgba(255, 255, 255, 0.1) !important;
+        box-shadow: 0 0 0 4px rgba(64, 196, 255, 0.1);
+    }
+
+    /* Boutons de navigation */
+    .nc-btn-suivant {
+        background: linear-gradient(135deg, #1158e4, #0910d5);
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 50px;
+        font-weight: 700;
+        box-shadow: 0 4px 15px rgba(9, 16, 213, 0.4);
+    }
+
+    .nc-btn-precedent {
+        background: rgba(255, 255, 255, 0.1);
+        color: white;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 12px 25px;
+        border-radius: 50px;
+    }
+</style>
+{% endblock %}
+
+{% block contenu %}
+
+<div class="nc-container">
+
+    <!-- ===== BARRE ETAPES ===== -->
+    <div class="nc-etapes-bar">
+        {% for etape in etapes %}
+        <div
+            class="nc-etape-item {% if etape == etape_actuelle %}active{% elif forloop.counter0 < index_etape %}done{% endif %}">
+            <div class="nc-etape-cercle">
+                {% if forloop.counter0 < index_etape %} <i class="fa-solid fa-check"></i>
+                    {% else %}
+                    {% if etape == 'enfant' %}<i class="fa-solid fa-baby"></i>
+                    {% elif etape == 'parents' %}<i class="fa-solid fa-users"></i>
+                    {% elif etape == 'lieu' %}<i class="fa-solid fa-location-dot"></i>
+                    {% elif etape == 'preuves' %}<i class="fa-solid fa-camera"></i>
+                    {% elif etape == 'validation' %}<i class="fa-solid fa-fingerprint"></i>
+                    {% endif %}
+                    {% endif %}
+            </div>
+            <span class="nc-etape-label">{{ etape|upper }}</span>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- ===== FORM ===== -->
+    <form method="post" enctype="multipart/form-data" class="nc-acte-form">
+        {% csrf_token %}
+
+        <!-- ===== ETAPE ENFANT ===== -->
+        {% if etape_actuelle == 'enfant' %}
+        <div class="nc-form-section">
+
+            <h2 class="nc-form-section-titre">Informations de l'enfant</h2>
+
+            <div class="nc-field-group">
+                <label class="nc-label">Prénom(s)</label>
+                <input type="text" name="prenom_enfant" class="nc-input" required>
+            </div>
+
+            <div class="nc-field-group">
+                <label class="nc-label">Nom</label>
+                <input type="text" name="nom_enfant" class="nc-input" required>
+            </div>
+
+            <div class="nc-field-row">
+                <div class="nc-field-group">
+                    <label class="nc-label">Date</label>
+                    <input type="date" name="date_naissance" class="nc-input" required>
+                </div>
+
+                <div class="nc-field-group">
+                    <label class="nc-label">Heure</label>
+                    <input type="time" name="heure_naissance" class="nc-input">
+                </div>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ===== ETAPE PARENTS ===== -->
+        {% if etape_actuelle == 'parents' %}
+        <div class="nc-form-section">
+
+            <h2 class="nc-form-section-titre">Parents</h2>
+
+            <div class="nc-field-group">
+                <label class="nc-label">Nom du père</label>
+                <input type="text" name="nom_pere" class="nc-input">
+            </div>
+
+            <div class="nc-field-group">
+                <label class="nc-label">Nom de la mère</label>
+                <input type="text" name="nom_mere" class="nc-input" required>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ===== ETAPE LIEU ===== -->
+        {% if etape_actuelle == 'lieu' %}
+        <div class="nc-form-section">
+
+            <h2 class="nc-form-section-titre">Lieu</h2>
+
+            <div class="nc-field-group">
+                <label class="nc-label">Lieu de naissance</label>
+                <input type="text" name="lieu" class="nc-input" required>
+            </div>
+
+        </div>
+        {% endif %}
+
+        <!-- ===== ETAPE VALIDATION ===== -->
+        {% if etape_actuelle == 'validation' %}
+        <div class="nc-form-section">
+
+            <h2 class="nc-form-section-titre">Validation</h2>
+
+            <label class="nc-checkbox-label">
+                <input type="checkbox" required>
+                <span class="nc-checkbox-custom"></span>
+                Confirmer les informations
+            </label>
+
+        </div>
+        {% endif %}
+
+        <!-- ===== BOUTONS ===== -->
+        <div class="nc-form-nav">
+
+            {% if index_etape > 0 %}
+            <button class="nc-btn-precedent">Précédent</button>
+            {% endif %}
+
+            <button type="submit" class="nc-btn-suivant">
+                Suivant
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+{% endblock %}

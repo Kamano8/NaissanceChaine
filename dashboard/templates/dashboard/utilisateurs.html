@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block titre %}Gestion des Utilisateurs{% endblock %}
+
+{% block contenu %}
+
+<!-- EN-TÊTE -->
+<div class="nc-db-entete">
+    <div>
+        <h1 class="nc-db-titre"><i class="fa-solid fa-users" style="color:#276cb1"></i> Gestion des Utilisateurs</h1>
+        <p class="nc-db-sous">Agents, Administrateurs et Familles enregistrés sur NaissanceChain</p>
+    </div>
+    <a href="/dashboard/utilisateurs/creer/" class="nc-btn-primary">
+        <i class="fa-solid fa-user-plus"></i> Créer un utilisateur
+    </a>
+</div>
+
+<!-- CARTES STATS -->
+<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;">
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(255,255,255,0.18);color:#fff;">
+                <i class="fa-solid fa-users"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_total }}</div>
+        <div class="nc-kpi-label">Total</div>
+        <div class="nc-kpi-objectif">Tous les comptes</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(110,231,183,0.2);color:#6ee7b7;">
+                <i class="fa-solid fa-id-badge"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_agents }}</div>
+        <div class="nc-kpi-label">Agents</div>
+        <div class="nc-kpi-objectif">Agents de terrain</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(251,191,36,0.2);color:#fbbf24;">
+                <i class="fa-solid fa-user-shield"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_admins }}</div>
+        <div class="nc-kpi-label">Administrateurs</div>
+        <div class="nc-kpi-objectif">Super, National, Préfectoral</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(255,255,255,0.18);color:#fff;">
+                <i class="fa-solid fa-house-user"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_familles }}</div>
+        <div class="nc-kpi-label">Familles</div>
+        <div class="nc-kpi-objectif">Citoyens inscrits</div>
+    </div>
+
+    <div class="nc-card nc-kpi-card" style="padding:16px 14px;">
+        <div class="nc-kpi-header">
+            <div class="nc-kpi-icone" style="background:rgba(252,165,165,0.2);color:#fca5a5;">
+                <i class="fa-solid fa-user-slash"></i>
+            </div>
+        </div>
+        <div class="nc-kpi-valeur">{{ nb_inactifs }}</div>
+        <div class="nc-kpi-label">Inactifs</div>
+        <div class="nc-kpi-objectif">Comptes désactivés</div>
+    </div>
+
+</div>
+
+<!-- FILTRES + RECHERCHE -->
+<div class="nc-card" style="padding:16px 20px;margin-bottom:20px;">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+
+        <!-- Onglets filtre -->
+        <div style="display:flex;gap:8px;">
+            {% for val, label, icone in filtres %}
+            <a href="?role={{ val }}{% if q %}&q={{ q }}{% endif %}"
+               style="display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:.2s;
+               {% if filtre == val %}background:#276cb1;color:#fff;{% else %}background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.75);{% endif %}">
+                <i class="{{ icone }}"></i> {{ label }}
+            </a>
+            {% endfor %}
+        </div>
+
+        <!-- Recherche -->
+        <form method="get" style="margin-left:auto;display:flex;gap:8px;">
+            <input type="hidden" name="role" value="{{ filtre }}">
+            <input type="text" name="q" value="{{ q }}"
+                   placeholder="Rechercher nom, email..."
+                   style="padding:7px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:rgba(255,255,255,0.1);color:#fff;font-size:13px;outline:none;width:220px;">
+            <button type="submit" style="padding:7px 14px;background:#276cb1;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;">
+                <i class="fa-solid fa-search"></i>
+            </button>
+            {% if q %}
+            <a href="?role={{ filtre }}" style="padding:7px 12px;background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.7);border-radius:8px;font-size:13px;text-decoration:none;">
+                <i class="fa-solid fa-xmark"></i>
+            </a>
+            {% endif %}
+        </form>
+    </div>
+</div>
+
+<!-- TABLEAU -->
+<div class="nc-card" style="padding:0;overflow:hidden;">
+    <div style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+            <tr style="background:rgba(255,255,255,0.08);border-bottom:1px solid rgba(255,255,255,0.1);">
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Utilisateur</th>
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Email</th>
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Rôle</th>
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Région</th>
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Inscrit le</th>
+                <th style="padding:14px 16px;text-align:left;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Statut</th>
+                <th style="padding:14px 16px;text-align:center;color:rgba(255,255,255,0.55);font-weight:700;font-size:11px;text-transform:uppercase;letter-spacing:.5px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for u in utilisateurs %}
+            <tr style="border-bottom:1px solid rgba(255,255,255,0.07);transition:background .15s;"
+                onmouseover="this.style.background='rgba(255,255,255,0.04)'"
+                onmouseout="this.style.background='transparent'">
+
+                <!-- Avatar + Nom -->
+                <td style="padding:12px 16px;">
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="width:36px;height:36px;border-radius:50%;background:#276cb1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">
+                            {% if u.photo %}
+                                <img src="{{ u.photo.url }}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                            {% else %}
+                                {{ u.prenom|first|upper }}{{ u.nom|first|upper }}
+                            {% endif %}
+                        </div>
+                        <div>
+                            <div style="font-weight:700;color:#fff;">{{ u.get_nom_complet }}</div>
+                            {% if u.telephone %}
+                            <div style="font-size:11px;color:rgba(255,255,255,0.45);">{{ u.telephone }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+
+                <!-- Email -->
+                <td style="padding:12px 16px;color:rgba(255,255,255,0.75);">{{ u.email }}</td>
+
+                <!-- Rôle badge -->
+                <td style="padding:12px 16px;">
+                    {% if u.role == 'super_admin' %}
+                        <span style="background:rgba(220,38,38,0.2);color:#fca5a5;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Super Admin</span>
+                    {% elif u.role == 'admin_national' %}
+                        <span style="background:rgba(251,191,36,0.2);color:#fbbf24;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Admin National</span>
+                    {% elif u.role == 'admin_prefectoral' %}
+                        <span style="background:rgba(147,197,253,0.2);color:#93c5fd;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Admin Préfectoral</span>
+                    {% elif u.role == 'agent' %}
+                        <span style="background:rgba(110,231,183,0.2);color:#6ee7b7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Agent</span>
+                    {% else %}
+                        <span style="background:rgba(255,255,255,0.12);color:rgba(255,255,255,0.7);padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">Famille</span>
+                    {% endif %}
+                </td>
+
+                <!-- Région -->
+                <td style="padding:12px 16px;color:rgba(255,255,255,0.60);">{{ u.get_region_display|default:"—" }}</td>
+
+                <!-- Date -->
+                <td style="padding:12px 16px;color:rgba(255,255,255,0.50);font-size:12px;">{{ u.date_joined|date:"d/m/Y" }}</td>
+
+                <!-- Statut -->
+                <td style="padding:12px 16px;">
+                    {% if u.is_active %}
+                        <span style="background:rgba(110,231,183,0.15);color:#6ee7b7;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">
+                            <i class="fa-solid fa-circle" style="font-size:7px;"></i> Actif
+                        </span>
+                    {% else %}
+                        <span style="background:rgba(252,165,165,0.15);color:#fca5a5;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;">
+                            <i class="fa-solid fa-circle" style="font-size:7px;"></i> Inactif
+                        </span>
+                    {% endif %}
+                </td>
+
+                <!-- Actions -->
+                <td style="padding:12px 16px;text-align:center;">
+                    <div style="display:flex;gap:6px;justify-content:center;">
+                        <!-- Activer / Désactiver -->
+                        {% if u != request.user %}
+                        <a href="/dashboard/utilisateurs/{{ u.pk }}/toggle/"
+                           title="{% if u.is_active %}Désactiver{% else %}Activer{% endif %}"
+                           style="width:30px;height:30px;border-radius:6px;display:flex;align-items:center;justify-content:center;text-decoration:none;
+                           {% if u.is_active %}background:rgba(251,191,36,0.15);color:#fbbf24;{% else %}background:rgba(110,231,183,0.15);color:#6ee7b7;{% endif %}">
+                            <i class="fa-solid {% if u.is_active %}fa-ban{% else %}fa-check{% endif %}" style="font-size:12px;"></i>
+                        </a>
+                        {% endif %}
+
+                        <!-- Supprimer (Super Admin seulement) -->
+                        {% if request.user.est_super_admin and u != request.user %}
+                        <a href="/dashboard/utilisateurs/{{ u.pk }}/supprimer/"
+                           title="Supprimer"
+                           onclick="return confirm('Supprimer {{ u.get_nom_complet }} ?')"
+                           style="width:30px;height:30px;border-radius:6px;background:rgba(220,38,38,0.15);color:#fca5a5;display:flex;align-items:center;justify-content:center;text-decoration:none;">
+                            <i class="fa-solid fa-trash" style="font-size:12px;"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" style="padding:40px;text-align:center;color:rgba(255,255,255,0.40);">
+                    <i class="fa-solid fa-users-slash" style="font-size:32px;display:block;margin-bottom:10px;"></i>
+                    Aucun utilisateur trouvé
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+
+{% endblock %}

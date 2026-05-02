@@ -1,0 +1,148 @@
+{% extends "agents/base_agent.html" %}
+{% load static %}
+
+{% block titre %}Acte Généré — {{ acte.reference }}{% endblock %}
+
+{% block css_extra %}
+<link rel="stylesheet" href="{% static 'actes/css/acte_genere.css' %}">
+{% endblock %}
+
+{% block contenu %}
+
+<!-- ===== EN-TÊTE SUCCÈS ===== -->
+<div class="nc-genere-header">
+    <div class="nc-genere-check">
+        <i class="fa-solid fa-shield-check"></i>
+    </div>
+    <h1 class="nc-genere-titre">Acte Généré !</h1>
+    <p class="nc-genere-sous">
+        L'enregistrement de <strong>{{ acte.get_nom_complet_enfant }}</strong>
+        a été sécurisé sur la blockchain nationale.
+    </p>
+</div>
+
+<!-- ===== CERTIFICAT DIGITAL ===== -->
+<div class="nc-certificat">
+
+    <div class="nc-certificat-top">
+        <div class="nc-certificat-icone">
+            <i class="fa-solid fa-file-circle-check"></i>
+        </div>
+        <span class="nc-certificat-securise">SÉCURISÉ</span>
+    </div>
+
+    <div class="nc-certificat-titre">ACTE DE NAISSANCE</div>
+    <div class="nc-certificat-pays">RÉPUBLIQUE DE GUINÉE</div>
+
+    <!-- QR Code -->
+    <div class="nc-qr-zone">
+        {% if acte.qr_code %}
+        <img src="{{ acte.qr_code.url }}" alt="QR Code acte {{ acte.reference }}" class="nc-qr-image">
+        {% else %}
+        <div class="nc-qr-placeholder">
+            <i class="fa-solid fa-qrcode"></i>
+        </div>
+        {% endif %}
+        <div class="nc-qr-id">
+            <i class="fa-solid fa-id-badge"></i>
+            ID: {{ acte.reference }}
+        </div>
+        <div class="nc-qr-id" style="font-size:10px;opacity:0.7;margin-top:4px">
+            <i class="fa-solid fa-fingerprint"></i>
+            UUID: {{ acte.uuid_enfant }}
+        </div>
+    </div>
+
+    <!-- Données de l'enfant -->
+    <div class="nc-certificat-donnees">
+        <div class="nc-certificat-champ">
+            <span class="nc-cert-label">NOM DE L'ENFANT</span>
+            <span class="nc-cert-valeur nc-cert-nom">{{ acte.get_nom_complet_enfant }}</span>
+        </div>
+        <div class="nc-certificat-row">
+            <div class="nc-certificat-champ">
+                <span class="nc-cert-label">DATE DE NAISSANCE</span>
+                <span class="nc-cert-valeur">{{ acte.date_naissance|date:"d M Y" }}</span>
+            </div>
+            <div class="nc-certificat-champ">
+                <span class="nc-cert-label">LIEU</span>
+                <span class="nc-cert-valeur">{{ acte.lieu_naissance }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hash blockchain -->
+    <div class="nc-hash-zone">
+        <div class="nc-hash-header">
+            <i class="fa-solid fa-link"></i>
+            <span>HASH BLOCKCHAIN</span>
+            <span class="nc-hash-badge">{% if acte.est_synchronise %}INCLUS{% else %}EN ATTENTE{% endif %}</span>
+        </div>
+        <div class="nc-hash-valeur" id="hashValeur">
+            {% if acte.hash_blockchain %}
+                {{ acte.hash_blockchain }}
+            {% else %}
+                Synchronisation en cours...
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Signature agent -->
+    <div class="nc-signature-zone">
+        <i class="fa-solid fa-fingerprint"></i>
+        <div>
+            <span class="nc-sig-label">SIGNATURE AGENT</span>
+            <span class="nc-sig-valeur">Agent: {{ acte.agent.get_nom_complet }}</span>
+        </div>
+        <span class="nc-sig-statut {% if acte.est_synchronise %}nc-sig-ok{% else %}nc-sig-attente{% endif %}">
+            {% if acte.est_synchronise %}Signé{% else %}En attente{% endif %}
+        </span>
+    </div>
+</div>
+
+<!-- ===== STATUT DIFFUSION ===== -->
+<div class="nc-diffusion-card">
+    <div>
+        <i class="fa-solid fa-wifi" style="color:#1a73e8"></i>
+        <span class="nc-diffusion-titre">Statut de Diffusion</span>
+        <span class="nc-diffusion-sous">
+            {% if acte.index_bloc %}
+                Diffusé sur le réseau principal (Node {{ acte.index_bloc|stringformat:"02d" }})
+            {% else %}
+                En attente de connexion réseau
+            {% endif %}
+        </span>
+    </div>
+    <span class="nc-diffusion-badge {% if acte.est_synchronise %}nc-badge-success{% else %}nc-badge-warning{% endif %}">
+        {% if acte.est_synchronise %}SYNC{% else %}ATTENTE{% endif %}
+    </span>
+</div>
+
+<!-- ===== ACTIONS ===== -->
+<a href="{% url 'actes:pdf' acte.pk %}" class="nc-btn-telecharger">
+    <i class="fa-solid fa-download"></i> Télécharger le PDF
+</a>
+
+<div class="nc-actions-secondaires">
+    <button class="nc-btn-partager" onclick="partagerSMS()">
+        <i class="fa-solid fa-share-nodes"></i> Partager SMS
+    </button>
+    <button class="nc-btn-partager" onclick="partagerBluetooth()">
+        <i class="fa-brands fa-bluetooth-b"></i> Bluetooth
+    </button>
+</div>
+
+<a href="{% url 'agents:tableau_de_bord' %}" class="nc-btn-retour">
+    Terminer et revenir au Dashboard →
+</a>
+
+<p class="nc-qr-info">
+    <i class="fa-solid fa-circle-info"></i>
+    Le QR Code permet aux parents de vérifier l'authenticité de l'acte à tout moment via l'application citoyenne ou un scanner standard.
+</p>
+
+{% endblock %}
+
+{% block js_extra %}
+<script src="{% static 'actes/js/acte_genere.js' %}"></script>
+{% endblock %}

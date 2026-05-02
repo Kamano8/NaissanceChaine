@@ -1,0 +1,109 @@
+{% extends "agents/base_agent.html" %}
+{% load static %}
+
+{% block titre %}Mon Profil — NaissanceChain{% endblock %}
+
+{% block contenu %}
+<div class="container-fluid">
+    <div class="nc-page-header">
+        <div>
+            <h4 class="mb-0">Mon Profil Agent</h4>
+            <p class="text-muted small mb-0">Gérez vos informations personnelles et votre photo.</p>
+        </div>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item"><a href="{% url 'agents:tableau_de_bord' %}">Tableau de Bord</a></li>
+                <li class="breadcrumb-item active">Profil</li>
+            </ol>
+        </nav>
+    </div>
+
+    <div class="row">
+        <!-- Colonne Gauche : Photo et Identité rapide -->
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-4 text-center">
+                <div class="card-body py-5">
+                    <div class="position-relative d-inline-block mb-4">
+                        {% if request.user.photo %}
+                            <img src="{{ request.user.photo.url }}" class="rounded-circle img-thumbnail shadow-sm" 
+                                 style="width: 150px; height: 150px; object-fit: cover;">
+                        {% else %}
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center mx-auto shadow-sm" 
+                                 style="width: 150px; height: 150px; font-size: 3.5rem; font-weight: 700;">
+                                {{ request.user.prenom|slice:":1"|upper }}{{ request.user.nom|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <h5 class="fw-bold mb-1">{{ request.user.get_full_name }}</h5>
+                    <p class="badge bg-primary-subtle text-primary px-3 mb-4">{{ agent.code_agent }}</p>
+
+                    <hr class="my-4 opacity-50">
+
+                    <form method="post" enctype="multipart/form-data" class="text-start">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="photo" class="form-label small fw-bold">Changer ma photo de profil</label>
+                            <input class="form-control form-control-sm" type="file" id="photo" name="photo" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100 py-2">
+                            <i class="fa-solid fa-cloud-arrow-up me-2"></i>Enregistrer la photo
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne Droite : Détails et Statistiques -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-navy"><i class="fa-solid fa-id-card me-2"></i>Informations Professionnelles</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small d-block">Secteur d'intervention</label>
+                            <span class="fw-bold">{{ agent.secteur }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small d-block">Centre d'état civil</label>
+                            <span class="fw-bold">{{ agent.centre_etat_civil|default:"Kindia Centre" }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small d-block">Email de contact</label>
+                            <span class="fw-bold">{{ request.user.email }}</span>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small d-block">Téléphone</label>
+                            <span class="fw-bold">{{ request.user.telephone|default:"N/A" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0 fw-bold text-navy"><i class="fa-solid fa-chart-line me-2"></i>Performance & Statut</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-md-4 text-center border-end">
+                            <div class="h3 fw-bold text-primary">{{ agent.actes_aujourd_hui }}</div>
+                            <div class="text-muted small">Actes du jour</div>
+                        </div>
+                        <div class="col-md-4 text-center border-end">
+                            <div class="h3 fw-bold text-warning">{{ agent.actes_non_synchronises }}</div>
+                            <div class="text-muted small">Non synchronisés</div>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <div class="h3 fw-bold text-success">{{ agent.taux_sync_blockchain }}%</div>
+                            <div class="text-muted small">Sync. Blockchain</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

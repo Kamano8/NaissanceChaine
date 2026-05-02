@@ -1,0 +1,79 @@
+{% extends "agents/base_agent.html" %}
+{% block titre %}Sécurité — {{ request.user.get_full_name }}{% endblock %}
+
+{% block contenu %}
+<div class="nc-page-header">
+    <div>
+        <h4 class="fw-bold mb-0 text-dark">Ma Sécurité</h4>
+        <p class="text-muted small mb-0">Gérez vos accès et sécurisez votre compte agent.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Formulaire de changement de mot de passe -->
+    <div class="col-lg-7">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold"><i class="fa-solid fa-key text-primary me-2"></i>Changer le mot de passe</h5>
+            </div>
+            <div class="card-body px-4 pb-4">
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Mot de passe actuel</label>
+                        <input type="password" class="form-control" name="old_password" required placeholder="••••••••">
+                    </div>
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Nouveau mot de passe</label>
+                            <input type="password" class="form-control" name="new_password" required placeholder="••••••••">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold">Confirmation</label>
+                            <input type="password" class="form-control" name="confirm_password" required placeholder="••••••••">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-bold">
+                        Mettre à jour mes accès
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Infos Session et Alertes -->
+    <div class="col-lg-5">
+        <div class="card border-0 shadow-sm rounded-4 mb-4">
+            <div class="card-header bg-white border-0 py-3">
+                <h5 class="mb-0 fw-bold"><i class="fa-solid fa-circle-info text-info me-2"></i>État du compte</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                        <span class="text-muted small">Dernière connexion</span>
+                        <span class="fw-bold small">{{ request.user.last_login|date:"d/m/Y H:i" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                        <span class="text-muted small">Adresse IP actuelle</span>
+                        <span class="badge bg-light text-dark border fw-normal">{{ request.user.derniere_connexion_ip|default:"127.0.0.1" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 bg-transparent">
+                        <span class="text-muted small">Statut agent</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-2">Actif</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="p-3 rounded-4 border-start border-4 border-warning bg-white shadow-sm">
+            <div class="d-flex gap-3 align-items-center">
+                <i class="fa-solid fa-shield-halved fs-3 text-warning"></i>
+                <div>
+                    <h6 class="fw-bold mb-1">Protection des données</h6>
+                    <p class="text-muted small mb-0">Vos accès sont protégés par chiffrement AES-256. Ne communiquez jamais votre mot de passe.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

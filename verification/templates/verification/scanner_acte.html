@@ -1,0 +1,432 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanner un Acte — NaissanceChain</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'verification/css/portail_public.css' %}">
+    <style>
+        #video-wrap {
+            position: relative;
+            width: 100%;
+            max-width: 420px;
+            margin: 0 auto;
+            border-radius: 16px;
+            overflow: hidden;
+            background: #000;
+            aspect-ratio: 1;
+        }
+        #video { width: 100%; height: 100%; object-fit: cover; display: block; }
+        #canvas { display: none; }
+        .scan-overlay {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            pointer-events: none;
+        }
+        .scan-frame {
+            width: 65%; aspect-ratio: 1;
+            border: 3px solid #1a73e8;
+            border-radius: 12px;
+            box-shadow: 0 0 0 9999px rgba(0,0,0,0.45);
+            animation: pulse-border 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-border {
+            0%,100% { border-color: #1a73e8; }
+            50%      { border-color: #34d399; }
+        }
+        .scan-line {
+            position: absolute;
+            left: 17.5%; right: 17.5%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #1a73e8, transparent);
+            animation: scan-move 2s linear infinite;
+        }
+        @keyframes scan-move {
+            0%   { top: 17.5%; }
+            100% { top: 82.5%; }
+        }
+        .statut-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 20px; border-radius: 50px;
+            font-weight: 700; font-size: 15px;
+        }
+        .statut-sync    { background: #d1fae5; color: #065f46; }
+        .statut-attente { background: #fef3c7; color: #92400e; }
+        .statut-erreur  { background: #fee2e2; color: #991b1b; }
+        .info-row { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f1f5f9; }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #64748b; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .5px; }
+        .info-val   { font-weight: 600; color: #1a1a2e; font-size: 14px; }
+        .prog-step  { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+        .prog-circle {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 14px; font-weight: 700;
+        }
+        .prog-done    { background: #d1fae5; color: #065f46; }
+        .prog-active  { background: #dbeafe; color: #1d4ed8; }
+        .prog-pending { background: #f1f5f9; color: #94a3b8; }
+        .prog-line    { flex: 1; height: 3px; background: #e2e8f0; margin-top: -20px; }
+        .prog-line-done { background: #34d399; }
+        .hash-box {
+            background: #f8fafc; border: 1px solid #e2e8f0;
+            border-radius: 8px; padding: 10px 14px;
+            font-family: monospace; font-size: 12px;
+            color: #475569; word-break: break-all;
+        }
+    </style>
+</head>
+<body class="nc-public-body">
+
+<!-- NAVBAR -->
+<nav class="nc-pub-nav">
+    <a href="{% url 'verification:mes_demandes' %}" class="nc-pub-logo">
+        <i class="fa-solid fa-diamond"></i>
+        <span>Naissance<strong>Chain</strong></span>
+    </a>
+    <div class="nc-pub-nav-links">
+        <a href="{% url 'verification:mes_demandes' %}"><i class="fa-solid fa-list"></i> Mes demandes</a>
+        <a href="{% url 'verification:scanner' %}" style="color:#f5a623;font-weight:600">
+            <i class="fa-solid fa-qrcode"></i> Scanner
+        </a>
+    </div>
+    <div class="nc-pub-nav-right">
+        <span style="font-size:13px;color:rgba(255,255,255,0.85);margin-right:4px">
+            <i class="fa-solid fa-user-circle"></i> {{ request.user.get_nom_complet }}
+        </span>
+        <a href="{% url 'accounts:deconnexion' %}" class="nc-nav-deconnexion">
+            <i class="fa-solid fa-right-from-bracket"></i> Déconnexion
+        </a>
+    </div>
+    <button class="nc-burger" id="ncBurger" aria-label="Menu">
+        <span></span><span></span><span></span>
+    </button>
+</nav>
+
+<!-- Drawer mobile -->
+<div class="nc-mobile-menu" id="ncMobileMenu">
+    <div class="nc-mobile-overlay" id="ncOverlay"></div>
+    <div class="nc-mobile-drawer">
+        <div class="nc-drawer-header">
+            <a href="{% url 'verification:mes_demandes' %}" class="nc-pub-logo">
+                <i class="fa-solid fa-diamond"></i>
+                <span>Naissance<strong>Chain</strong></span>
+            </a>
+            <button class="nc-drawer-close" id="ncDrawerClose"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <div class="nc-drawer-user">
+            <div class="nc-drawer-avatar"><i class="fa-solid fa-user"></i></div>
+            <div class="nc-drawer-user-info">
+                <strong>{{ request.user.get_nom_complet }}</strong>
+                <span>Citoyen</span>
+            </div>
+        </div>
+        <div class="nc-drawer-links">
+            <a href="{% url 'verification:mes_demandes' %}"><i class="fa-solid fa-list"></i> Mes demandes</a>
+            <a href="{% url 'verification:scanner' %}" class="actif"><i class="fa-solid fa-qrcode"></i> Scanner un acte</a>
+            <a href="{% url 'verification:nouvelle_demande' %}"><i class="fa-solid fa-plus"></i> Nouvelle demande</a>
+            <a href="{% url 'verification:public' %}"><i class="fa-solid fa-magnifying-glass"></i> Vérifier un acte</a>
+        </div>
+        <div class="nc-drawer-footer">
+            <a href="{% url 'accounts:deconnexion' %}" class="nc-btn-deconnexion">
+                <i class="fa-solid fa-right-from-bracket"></i> Se déconnecter
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="container py-5" style="max-width:860px">
+
+    <div class="text-center mb-4">
+        <h2 style="font-weight:700;color:#1a1a2e">
+            <i class="fa-solid fa-qrcode" style="color:#1a73e8"></i> Scanner un acte de naissance
+        </h2>
+        <p class="text-muted">Scannez le QR code de l'acte physique ou saisissez la référence manuellement</p>
+    </div>
+
+    <!-- ===== SECTION SCANNER ===== -->
+    {% if not acte and not erreur %}
+    <div class="card border-0 shadow-sm p-4 mb-4" style="border-radius:16px">
+
+        <!-- Caméra -->
+        <div id="video-wrap" class="mb-3">
+            <video id="video" autoplay playsinline muted></video>
+            <canvas id="canvas"></canvas>
+            <div class="scan-overlay">
+                <div class="scan-frame"></div>
+                <div class="scan-line"></div>
+            </div>
+        </div>
+
+        <div id="scan-status" class="text-center text-muted mb-3" style="font-size:14px">
+            <i class="fa-solid fa-spinner fa-spin"></i> Pointez la caméra vers le QR code de l'acte...
+        </div>
+
+        <div class="text-center mb-3">
+            <button id="btn-stop-camera" class="btn btn-outline-secondary btn-sm" onclick="stopCamera()">
+                <i class="fa-solid fa-video-slash"></i> Arrêter la caméra
+            </button>
+        </div>
+
+        <!-- Séparateur -->
+        <div class="d-flex align-items-center gap-3 my-3">
+            <hr class="flex-fill"><span class="text-muted" style="font-size:13px">ou saisir manuellement</span><hr class="flex-fill">
+        </div>
+
+        <!-- Saisie manuelle -->
+        <form method="get" action="{% url 'verification:scanner' %}">
+            <div class="input-group input-group-lg">
+                <span class="input-group-text"><i class="fa-solid fa-hashtag"></i></span>
+                <input type="text" name="ref" class="form-control"
+                       placeholder="Ex: NC-2024-0042-AB12"
+                       value="{{ reference }}">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fa-solid fa-search"></i> Vérifier
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- ===== ERREUR ===== -->
+    {% if erreur %}
+    <div class="alert border-0 shadow-sm d-flex align-items-center gap-3 mb-4"
+         style="background:#fee2e2;border-radius:12px;color:#991b1b">
+        <i class="fa-solid fa-circle-xmark fa-xl"></i>
+        <div>
+            <strong>Acte introuvable</strong><br>
+            <span style="font-size:14px">{{ erreur }}</span>
+        </div>
+    </div>
+    <div class="text-center">
+        <a href="{% url 'verification:scanner' %}" class="btn btn-primary">
+            <i class="fa-solid fa-rotate-left"></i> Réessayer
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- ===== RÉSULTAT ACTE ===== -->
+    {% if acte %}
+    <div class="card border-0 shadow-sm p-4" style="border-radius:16px">
+
+        <!-- En-tête statut -->
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
+            <div>
+                <h3 style="font-weight:700;color:#1a1a2e;margin-bottom:4px">
+                    {{ acte.prenom_enfant }} {{ acte.nom_enfant }}
+                </h3>
+                <span style="color:#64748b;font-size:13px">
+                    <i class="fa-solid fa-hashtag"></i> {{ acte.reference }}
+                </span>
+            </div>
+            {% if acte.est_synchronise %}
+                <span class="statut-badge statut-sync">
+                    <i class="fa-solid fa-shield-check"></i> Validé & Sécurisé sur Blockchain
+                </span>
+            {% elif acte.statut_sync == 'erreur' %}
+                <span class="statut-badge statut-erreur">
+                    <i class="fa-solid fa-circle-exclamation"></i> Erreur de synchronisation
+                </span>
+            {% else %}
+                <span class="statut-badge statut-attente">
+                    <i class="fa-regular fa-clock"></i> En attente de validation
+                </span>
+            {% endif %}
+        </div>
+
+        <!-- Barre de progression blockchain -->
+        <div class="d-flex align-items-center mb-4 px-2">
+            <div class="prog-step">
+                <div class="prog-circle prog-done"><i class="fa-solid fa-check"></i></div>
+                <small class="text-muted fw-semibold" style="font-size:11px">REÇU</small>
+            </div>
+            <div class="prog-line {% if acte.statut_sync != 'en_attente' %}prog-line-done{% endif %}"></div>
+            <div class="prog-step">
+                <div class="prog-circle {% if acte.statut_sync == 'synchronise' %}prog-done{% elif acte.statut_sync == 'en_attente' %}prog-active{% else %}prog-pending{% endif %}">
+                    <i class="fa-solid {% if acte.est_synchronise %}fa-check{% else %}fa-spinner fa-spin{% endif %}"></i>
+                </div>
+                <small class="text-muted fw-semibold" style="font-size:11px">VALIDATION</small>
+            </div>
+            <div class="prog-line {% if acte.est_synchronise %}prog-line-done{% endif %}"></div>
+            <div class="prog-step">
+                <div class="prog-circle {% if acte.est_synchronise %}prog-done{% else %}prog-pending{% endif %}">
+                    <i class="fa-solid {% if acte.est_synchronise %}fa-check{% else %}fa-database{% endif %}"></i>
+                </div>
+                <small class="text-muted fw-semibold" style="font-size:11px">BLOCKCHAIN</small>
+            </div>
+        </div>
+
+        <hr class="my-3">
+
+        <!-- Informations de l'enfant -->
+        <h5 class="fw-bold mb-3" style="color:#1a1a2e">
+            <i class="fa-solid fa-baby" style="color:#1a73e8"></i> Informations de l'enfant
+        </h5>
+        <div class="mb-4">
+            <div class="info-row">
+                <span class="info-label">Nom complet</span>
+                <span class="info-val">{{ acte.prenom_enfant }} {{ acte.nom_enfant }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date de naissance</span>
+                <span class="info-val">{{ acte.date_naissance|date:"d MMMM Y" }}</span>
+            </div>
+            {% if acte.heure_naissance %}
+            <div class="info-row">
+                <span class="info-label">Heure de naissance</span>
+                <span class="info-val">{{ acte.heure_naissance|time:"H:i" }}</span>
+            </div>
+            {% endif %}
+            <div class="info-row">
+                <span class="info-label">Sexe</span>
+                <span class="info-val">{{ acte.get_sexe_display }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Lieu de naissance</span>
+                <span class="info-val">{{ acte.lieu_naissance }}, {{ acte.prefecture }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Région</span>
+                <span class="info-val">{{ acte.region_naissance }}</span>
+            </div>
+        </div>
+
+        <!-- Informations des parents -->
+        <h5 class="fw-bold mb-3" style="color:#1a1a2e">
+            <i class="fa-solid fa-users" style="color:#1a73e8"></i> Parents
+        </h5>
+        <div class="mb-4">
+            <div class="info-row">
+                <span class="info-label">Père</span>
+                <span class="info-val">{{ acte.nom_pere }}</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Mère</span>
+                <span class="info-val">{{ acte.nom_mere }}</span>
+            </div>
+        </div>
+
+        <!-- Blockchain -->
+        {% if acte.est_synchronise %}
+        <h5 class="fw-bold mb-3" style="color:#1a1a2e">
+            <i class="fa-solid fa-link" style="color:#1a73e8"></i> Données Blockchain
+        </h5>
+        <div class="mb-4">
+            <div class="info-row">
+                <span class="info-label">Date de synchronisation</span>
+                <span class="info-val">{{ acte.date_sync|date:"d/m/Y H:i" }}</span>
+            </div>
+            {% if acte.index_bloc %}
+            <div class="info-row">
+                <span class="info-label">Index du bloc</span>
+                <span class="info-val">#{{ acte.index_bloc }}</span>
+            </div>
+            {% endif %}
+            {% if acte.hash_blockchain %}
+            <div class="mb-2">
+                <span class="info-label d-block mb-1">Hash Blockchain</span>
+                <div class="hash-box">{{ acte.hash_blockchain }}</div>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Enregistrement -->
+        <div class="info-row">
+            <span class="info-label">Enregistré le</span>
+            <span class="info-val">{{ acte.date_creation|date:"d/m/Y à H:i" }}</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Agent responsable</span>
+            <span class="info-val">{{ acte.agent.utilisateur.get_nom_complet }}</span>
+        </div>
+
+        <div class="d-flex gap-3 mt-4 flex-wrap">
+            <a href="{% url 'verification:scanner' %}" class="btn btn-outline-secondary">
+                <i class="fa-solid fa-rotate-left"></i> Scanner un autre acte
+            </a>
+            <a href="{% url 'verification:mes_demandes' %}" class="btn btn-primary">
+                <i class="fa-solid fa-list"></i> Mes demandes
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js"></script>
+<script>
+(function(){
+    const burger  = document.getElementById('ncBurger');
+    const menu    = document.getElementById('ncMobileMenu');
+    const overlay = document.getElementById('ncOverlay');
+    const close   = document.getElementById('ncDrawerClose');
+    function open()  { menu.classList.add('ouvert');    burger.classList.add('ouvert'); }
+    function fermer(){ menu.classList.remove('ouvert'); burger.classList.remove('ouvert'); }
+    if(burger)  burger.addEventListener('click', open);
+    if(overlay) overlay.addEventListener('click', fermer);
+    if(close)   close.addEventListener('click', fermer);
+})();
+{% if not acte and not erreur %}
+const video  = document.getElementById('video');
+const canvas = document.getElementById('canvas');
+const ctx    = canvas.getContext('2d');
+const status = document.getElementById('scan-status');
+let stream   = null;
+let scanning = true;
+
+async function startCamera() {
+    try {
+        stream = await navigator.mediaDevices.getUserMedia({
+            video: { facingMode: 'environment' }
+        });
+        video.srcObject = stream;
+        video.play();
+        requestAnimationFrame(scanFrame);
+    } catch (e) {
+        status.innerHTML = '<i class="fa-solid fa-video-slash"></i> Caméra non disponible. Utilisez la saisie manuelle.';
+    }
+}
+
+function scanFrame() {
+    if (!scanning) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+        canvas.width  = video.videoWidth;
+        canvas.height = video.videoHeight;
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+            inversionAttempts: 'dontInvert'
+        });
+        if (code) {
+            scanning = false;
+            stopCamera();
+            // Extraire la référence du contenu QR (format: NC:REF|...)
+            let ref = code.data;
+            const match = ref.match(/NC:([^|]+)/);
+            if (match) ref = match[1];
+            status.innerHTML = '<i class="fa-solid fa-circle-check" style="color:#16a34a"></i> QR Code détecté ! Redirection...';
+            setTimeout(() => {
+                window.location.href = "{% url 'verification:scanner' %}?ref=" + encodeURIComponent(ref);
+            }, 600);
+            return;
+        }
+    }
+    requestAnimationFrame(scanFrame);
+}
+
+function stopCamera() {
+    scanning = false;
+    if (stream) stream.getTracks().forEach(t => t.stop());
+}
+
+startCamera();
+{% endif %}
+</script>
+</body>
+</html>

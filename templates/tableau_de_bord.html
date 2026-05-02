@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- En-tête Agent -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="fw-bold mb-0">Hello, {{ agent.get_nom_complet }}</h4>
+            <small class="text-muted" id="gpsTexte">Initialisation GPS...</small>
+        </div>
+        <div id="gpsStatut" class="spinner-grow text-success spinner-grow-sm" role="status"></div>
+    </div>
+
+    <!-- Compteurs (Cartes horizontales) -->
+    <div class="row g-3 mb-4">
+        <div class="col-6">
+            <div class="nc-card text-center py-4 bg-primary text-white">
+                <h2 class="fw-bold mb-0">{{ actes_aujourd_hui }}</h2>
+                <small>Actes (Jour)</small>
+            </div>
+        </div>
+        <div class="col-6">
+            <div class="nc-card text-center py-4 bg-warning">
+                <h2 class="fw-bold mb-0">{{ actes_non_sync }}</h2>
+                <small>En attente</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Flux d'activité -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="fw-bold mb-0">Activités récentes</h5>
+        <button id="btnMarquerLu" class="btn btn-link btn-sm text-decoration-none">Tout marquer lu</button>
+    </div>
+
+    <div class="nc-flux-liste">
+        {% for evt in flux_activite %}
+            <div class="nc-flux-item {% if not evt.est_lu %}nc-flux-non-lu{% endif %}">
+                <div class="d-flex justify-content-between">
+                    <h6 class="mb-1 text-primary">{{ evt.titre }}</h6>
+                    <small class="text-muted">{{ evt.date_creation|timesince }}</small>
+                </div>
+                <p class="mb-0 small text-secondary">{{ evt.contenu }}</p>
+            </div>
+        {% empty %}
+            <div class="text-center py-5">
+                <p class="text-muted">Aucune activité pour le moment.</p>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Action Rapide -->
+    <div class="fixed-bottom p-3 text-center" style="background: rgba(248,249,250,0.9);">
+        <a href="{% url 'actes:enregistrer' %}" class="btn btn-nc-primary w-100 py-3 shadow">
+            Nouvel Enregistrement
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'agents/js/Tableau de bord .js' %}"></script>
+{% endblock %}
